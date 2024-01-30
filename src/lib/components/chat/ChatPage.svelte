@@ -3,10 +3,24 @@
     import {Pane, Splitpanes} from "svelte-splitpanes";
     import ChatMessageEntry from "$lib/components/chat/ChatMessageEntry.svelte";
     import ChatPromptTextArea from "$lib/components/chat/ChatPromptTextArea.svelte";
-    import {cn} from "$lib/utils";
     import {Button} from "$lib/components/ui/button";
-    import {PaperclipIcon, SendIcon} from "lucide-svelte";
+    import {CogIcon, PaperclipIcon, SendIcon} from "lucide-svelte";
+    import * as Sheet from "$lib/components/ui/sheet";
+    import {Separator} from "$lib/components/ui/separator";
+
+    let isSettingsOpen = false;
 </script>
+
+<Sheet.Root bind:open={isSettingsOpen}>
+    <Sheet.Content side="right">
+        <Sheet.Header>
+            <Sheet.Title>Chat Settings</Sheet.Title>
+            <Sheet.Description>
+                Not yet implemented
+            </Sheet.Description>
+        </Sheet.Header>
+    </Sheet.Content>
+</Sheet.Root>
 
 <div class="flex flex-col py-2 px-4 h-screen">
     <div class="flex-0 flex flex-row pt-4 pb-4">
@@ -24,35 +38,29 @@
                                     <ChatMessageEntry content="123\n\n" isUser={true}/>
                                     <ChatMessageEntry content="123\n\n" isUser={false}/>
                                     <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
-                                    <ChatMessageEntry content="123\n\n" isUser={true}/>
                                 </div>
                             </div>
                             <div class="flex-grow-0 flex flex-col">
-                                <div>
-                                    <!-- for other toolbars here eventually -->
+                                <Separator/>
+                                <div class="flex flex-row justify-between items-center mt-2">
+                                    <div>
+                                        <!-- for other toolbars here eventually -->
+                                    </div>
+                                    <div class="flex flex-row justify-end items-center">
+                                        <Button variant="outline" class="h-8 px-2 py-1 text-muted-foreground"
+                                                on:click={() => (isSettingsOpen = !isSettingsOpen)}>
+                                            <CogIcon class="w-4 h-4"/>
+                                        </Button>
+                                    </div>
                                 </div>
                                 <div class="flex flex-row justify-between items-center">
                                     <ChatPromptTextArea/>
                                     <div class="flex flex-col space-y-2">
                                         <Button variant="outline">
-                                            <PaperclipIcon class="w-6 h-6"/>
+                                            <PaperclipIcon class="w-4 h-4"/>
                                         </Button>
                                         <Button variant="outline">
-                                            <SendIcon class="w-6 h-6"/>
+                                            <SendIcon class="w-4 h-4"/>
                                         </Button>
                                     </div>
                                 </div>
