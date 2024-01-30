@@ -25,14 +25,14 @@
             <div class="flex flex-row justify-between items-center">
                 <h3 class="font-bold mb-1 ml-3 text-xl">You</h3>
                 <div class="flex flex-row items-center justify-end -space-x-0.5">
-                    <Button variant="ghost" class="h-8 px-2 py-0 text-muted-foreground">
-                        <ClipboardIcon class="w-4 h-4"/>
-                    </Button>
-                    {#if isUser}
+                    {#if !isUser}
                         <Button variant="ghost" class="h-8 px-2 py-0 text-muted-foreground">
                             <RotateCcwIcon class="w-4 h-4"/>
                         </Button>
                     {/if}
+                    <Button variant="ghost" class="h-8 px-2 py-0 text-muted-foreground">
+                        <ClipboardIcon class="w-4 h-4"/>
+                    </Button>
                 </div>
             </div>
             <div class="ml-3">

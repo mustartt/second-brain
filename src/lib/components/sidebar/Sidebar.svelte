@@ -10,9 +10,9 @@
         SettingsIcon,
         UploadCloudIcon
     } from "lucide-svelte";
-    import Header from "$lib/sidebar/Header.svelte";
-    import SidebarNavButton from "$lib/sidebar/SidebarNavButton.svelte";
-    import SidebarFooter from "$lib/sidebar/SidebarFooter.svelte";
+    import Header from "$lib/components/sidebar/Header.svelte";
+    import SidebarNavButton from "$lib/components/sidebar/SidebarNavButton.svelte";
+    import SidebarFooter from "$lib/components/sidebar/SidebarFooter.svelte";
     import {onDestroy} from "svelte";
 
     let isExpanded = true;

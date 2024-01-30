@@ -34,7 +34,7 @@
                     <div class="flex h-full flex-col justify-between">
                         <div class="flex flex-col h-full container max-w-4xl mx-auto">
                             <div class="flex flex-grow overflow-y-auto">
-                                <div class="flex flex-col space-y-4">
+                                <div class="flex flex-col w-full space-y-4">
                                     <ChatMessageEntry content="123\n\n" isUser={true}/>
                                     <ChatMessageEntry content="123\n\n" isUser={false}/>
                                     <ChatMessageEntry content="123\n\n" isUser={true}/>

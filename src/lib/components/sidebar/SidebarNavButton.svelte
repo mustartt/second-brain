@@ -1,6 +1,6 @@
 <script lang="ts">
     import {cn} from '$lib/utils.js';
-    import {Button} from '$lib/components/ui/button/index.js';
+    import {Button} from '$lib/components/ui/button';
     import type {SidebarItem} from "$lib/store/appstore";
 
     export let builder: any;

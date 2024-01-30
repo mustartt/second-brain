@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Sidebar from "$lib/sidebar/Sidebar.svelte";
+    import Sidebar from "$lib/components/sidebar/Sidebar.svelte";
     import ChatPage from "$lib/components/chat/ChatPage.svelte";
     import {Toaster} from "$lib/components/ui/sonner";
 </script>
