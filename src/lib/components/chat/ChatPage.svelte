@@ -15,11 +15,10 @@
                 <Pane minSize={40} size={65}>
                     <div class="flex h-full flex-col justify-between">
                         <div class="flex-grow overflow-y-auto">
-                            <div class="container max-w-3xl mx-auto">
-                                <ChatMessageEntry/>
-                                <ChatMessageEntry/>
-                                <ChatMessageEntry/>
-
+                            <div class="container max-w-3xl mx-auto space-y-4">
+                                <ChatMessageEntry content="123" isUser={true}/>
+                                <ChatMessageEntry content="123" isUser={false}/>
+                                <ChatMessageEntry content="123" isUser={true}/>
                             </div>
                         </div>
                         <div class="flex-grow-0 h-32 bg-muted">Chat</div>

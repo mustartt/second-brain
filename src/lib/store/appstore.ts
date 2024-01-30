@@ -1,8 +1,6 @@
 import {derived, writable} from "svelte/store";
-import {HomeIcon} from "lucide-svelte";
 import type {ComponentType} from "svelte";
 import {v4 as uuidv4} from 'uuid';
-import exp from "node:constants";
 
 export type Layout = 'home' | 'answer' | 'chat' | 'files' | 'queue' | 'settings';
 
@@ -34,13 +32,27 @@ export interface ChatHistoryPreview {
     name: string;
 }
 
+export interface User {
+    name: string;
+    userID: string;
+    picture: string;
+    email: string;
+}
+
+export interface UserState {
+    hasAuth: boolean;
+    user: User | null;
+}
+
 export interface AppStore {
     layout: LayoutState;
     chats: {
         activeChat: Chat | null;
         history: Chat[]
     };
+    auth: UserState;
 }
+
 
 function createAppStore(initialState: AppStore) {
     const {subscribe, set, update} = writable<AppStore>(initialState);
@@ -84,6 +96,15 @@ export const appState = createAppStore({
     chats: {
         activeChat: null,
         history: []
+    },
+    auth: {
+        hasAuth: true,
+        user: {
+            name: 'John Foo',
+            userID: 'google-oauth2|103547991597142817347',
+            picture: 'https://avatars.githubusercontent.com/u/124599?v=4',
+            email: 'johnfoo@gmail.com',
+        }
     }
 });
 
@@ -95,3 +116,10 @@ export const chatHistoryState = derived<typeof appState, ChatHistoryPreview[]>(a
             name: chat.name
         };
     }));
+
+export const authState = derived<typeof appState, User | null>(appState, ($store) => {
+    if ($store.auth.hasAuth) {
+        return $store.auth.user!;
+    }
+    return null;
+});
