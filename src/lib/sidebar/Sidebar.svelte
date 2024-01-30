@@ -13,12 +13,15 @@
     import Header from "$lib/sidebar/Header.svelte";
     import SidebarNavButton from "$lib/sidebar/SidebarNavButton.svelte";
     import SidebarFooter from "$lib/sidebar/SidebarFooter.svelte";
+    import {onDestroy} from "svelte";
 
     let isExpanded = true;
 
-    layoutState.subscribe((store) => {
+    const unsubscribe = layoutState.subscribe((store) => {
         isExpanded = store.isSidebarExpanded;
     });
+
+    onDestroy(unsubscribe);
 
     const sidebarItems: SidebarItem[] = [
         {
