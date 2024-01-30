@@ -81,10 +81,18 @@ function createAppStore(initialState: AppStore) {
         });
     }
 
+    function toggleSidebar() {
+        update(value => {
+            value.layout.isSidebarExpanded = !value.layout.isSidebarExpanded;
+            return value;
+        });
+    }
+
     return {
         subscribe, set, update,
         createNewChat,
-        deleteChat
+        deleteChat,
+        toggleSidebar
     };
 }
 

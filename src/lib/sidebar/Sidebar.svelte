@@ -1,12 +1,12 @@
 <script lang="ts">
-    import {layoutState, type SidebarItem} from "$lib/store/appstore";
+    import {appState, layoutState, type SidebarItem} from "$lib/store/appstore";
     import {Separator} from "$lib/components/ui/separator";
     import * as Tooltip from "$lib/components/ui/tooltip";
     import {
         FileStackIcon,
         GlobeIcon,
         HomeIcon,
-        MessageSquareTextIcon,
+        MessageSquareTextIcon, PanelLeftIcon,
         SettingsIcon,
         UploadCloudIcon
     } from "lucide-svelte";
@@ -63,6 +63,19 @@
         <Header displayWide={isExpanded}/>
         <Separator/>
         <nav class="flex flex-col space-y-0">
+            <Tooltip.Root openDelay={100} closeDelay={75}>
+                <Tooltip.Trigger asChild let:builder>
+                    <SidebarNavButton item={{
+                      title: '',
+                      icon: PanelLeftIcon,
+                      handler: () => appState.toggleSidebar()
+                    }} builder={builder} displayWide={isExpanded}/>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="right">
+                    Toggle Sidebar
+                </Tooltip.Content>
+            </Tooltip.Root>
+            <Separator/>
             {#each sidebarItems as item}
                 <Tooltip.Root openDelay={100} closeDelay={75}>
                     <Tooltip.Trigger asChild let:builder>
