@@ -4,6 +4,7 @@
     import {Toaster} from '$lib/components/ui/sonner';
     import {type Layout, layoutState} from "$lib/store/appstore";
     import {type ComponentType, onDestroy} from "svelte";
+    import QueuePage from "$lib/components/queue/QueuePage.svelte";
 
     let activeTab: Layout;
 
@@ -12,7 +13,7 @@
         'answer': null,
         'chat': ChatPage,
         'files': null,
-        'queue': null,
+        'queue': QueuePage,
         'settings': null,
     };
 
@@ -22,6 +23,8 @@
 
     onDestroy(unsub);
 </script>
+
+<Toaster closeButton={true} expand={true}/>
 
 <main class="bg-background w-screen h-screen max-w-full max-h-full flex flex-row">
     <div class="flex-none">
@@ -34,4 +37,3 @@
     </div>
 </main>
 
-<Toaster/>

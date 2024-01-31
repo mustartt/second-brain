@@ -29,6 +29,7 @@
     "lucide-svelte": "^0.319.0",
     "marked": "^11.2.0",
     "mode-watcher": "^0.2.0",
+    "svelte-file-dropzone": "^2.0.4",
     "svelte-sonner": "^0.3.11",
     "svelte-splitpanes": "^0.8.0",
     "tailwind-merge": "^2.2.1",
