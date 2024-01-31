@@ -30,37 +30,37 @@
             title: 'Home',
             layout: 'home',
             icon: HomeIcon,
-            handler: () => console.log('sidebar: home')
+            handler: () => appState.setActiveLayout('home')
         },
         {
             title: 'Answer',
             icon: GlobeIcon,
             layout: 'answer',
-            handler: () => console.log('sidebar: answer')
+            handler: () => appState.setActiveLayout('answer')
         },
         {
             title: 'Chat',
             layout: 'chat',
             icon: MessageSquareTextIcon,
-            handler: () => console.log('sidebar: chat')
+            handler: () => appState.setActiveLayout('chat')
         },
         {
             title: 'Files',
             layout: 'files',
             icon: FileStackIcon,
-            handler: () => console.log('sidebar: files')
+            handler: () => appState.setActiveLayout('files')
         },
         {
             title: 'Queue',
             layout: 'queue',
             icon: UploadCloudIcon,
-            handler: () => console.log('sidebar: queue')
+            handler: () => appState.setActiveLayout('queue')
         },
         {
             title: 'Settings',
             layout: 'settings',
             icon: SettingsIcon,
-            handler: () => console.log('sidebar: settings')
+            handler: () => appState.setActiveLayout('settings')
         }
     ];
 </script>
