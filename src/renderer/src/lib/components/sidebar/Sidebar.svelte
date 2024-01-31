@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {appState, layoutState, type SidebarItem} from "$lib/store/appstore";
+    import {appState, type Layout, layoutState, type SidebarItem} from "$lib/store/appstore";
     import {Separator} from "$lib/components/ui/separator";
     import * as Tooltip from "$lib/components/ui/tooltip";
     import {
@@ -16,9 +16,11 @@
     import {onDestroy} from "svelte";
 
     let isExpanded = true;
+    let activeTab: Layout;
 
     const unsubscribe = layoutState.subscribe((store) => {
         isExpanded = store.isSidebarExpanded;
+        activeTab = store.activeLayout;
     });
 
     onDestroy(unsubscribe);
@@ -26,36 +28,41 @@
     const sidebarItems: SidebarItem[] = [
         {
             title: 'Home',
+            layout: 'home',
             icon: HomeIcon,
             handler: () => console.log('sidebar: home')
         },
         {
             title: 'Answer',
             icon: GlobeIcon,
+            layout: 'answer',
             handler: () => console.log('sidebar: answer')
         },
         {
             title: 'Chat',
+            layout: 'chat',
             icon: MessageSquareTextIcon,
             handler: () => console.log('sidebar: chat')
         },
         {
             title: 'Files',
+            layout: 'files',
             icon: FileStackIcon,
             handler: () => console.log('sidebar: files')
         },
         {
             title: 'Queue',
+            layout: 'queue',
             icon: UploadCloudIcon,
             handler: () => console.log('sidebar: queue')
         },
         {
             title: 'Settings',
+            layout: 'settings',
             icon: SettingsIcon,
             handler: () => console.log('sidebar: settings')
         }
     ];
-
 </script>
 
 <aside class="flex flex-col justify-between h-full p-2">
@@ -67,9 +74,10 @@
                 <Tooltip.Trigger asChild let:builder>
                     <SidebarNavButton item={{
                       title: '',
+                      layout: 'home',
                       icon: PanelLeftIcon,
                       handler: () => appState.toggleSidebar()
-                    }} builder={builder} displayWide={isExpanded}/>
+                    }} builder={builder} displayWide={isExpanded} isActive={isExpanded}/>
                 </Tooltip.Trigger>
                 <Tooltip.Content side="right">
                     Toggle Sidebar
@@ -79,7 +87,12 @@
             {#each sidebarItems as item}
                 <Tooltip.Root openDelay={100} closeDelay={75}>
                     <Tooltip.Trigger asChild let:builder>
-                        <SidebarNavButton item={item} builder={builder} displayWide={isExpanded}/>
+                        <SidebarNavButton
+                            item={item}
+                            builder={builder}
+                            displayWide={isExpanded}
+                            isActive={activeTab === item.layout}
+                        />
                     </Tooltip.Trigger>
                     <Tooltip.Content side="right">
                         {item.title}

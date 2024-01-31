@@ -6,10 +6,15 @@
     export let builder: any;
     export let item: SidebarItem;
     export let displayWide = true;
+    export let isActive = false;
 </script>
 
 
-<Button variant="ghost" builders={[builder]} class={cn("relative justify-start")}
+<Button variant="ghost" builders={[builder]}
+        class={cn(
+            "relative justify-start",
+            isActive ? "" : "text-muted-foreground"
+        )}
         on:click={item.handler}>
     <svelte:component this={item.icon} class="w-5 h-5"/>
     {#if displayWide}
