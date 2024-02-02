@@ -15,7 +15,7 @@
     let isLoading = false;
 
     async function onSubmit() {
-        console.log('onSubmit');
+        toast.info('not yet implemented');
         isLoading = true;
         setTimeout(() => {
             isLoading = false;
@@ -28,7 +28,9 @@
             text: 'Google',
             handler: async () => {
                 try {
+                    isLoading = true;
                     await signInWithPopup(firebaseAuth, googleAuthProvider);
+                    isLoading = false;
                 } catch (err) {
                     toast.error('Failed to login');
                     console.error(err);
@@ -40,7 +42,9 @@
             text: 'Continue as Guest',
             handler: async () => {
                 try {
+                    isLoading = true;
                     await signInAnonymously(firebaseAuth);
+                    isLoading = false;
                 } catch (err) {
                     toast.error('Failed to login');
                     console.error(err);

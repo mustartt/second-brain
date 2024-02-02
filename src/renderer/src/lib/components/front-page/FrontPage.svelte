@@ -1,6 +1,6 @@
 <script lang="ts">
     import {Button} from "$lib/components/ui/button";
-    import SignUp from "$lib/components/front-page/SignUp.svelte";
+    import SignUp from "$lib/components/front-page/UserAuth.svelte";
 
     const bgImage = 'https://images.unsplash.com/photo-1590069261209-f8e9b8642343?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1376&q=80';
 
@@ -10,8 +10,9 @@
 <div
     class="container relative hidden flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
     <Button variant="ghost"
-            class="absolute right-4 top-4 md:right-8 md:top-8">
-        Login
+            class="absolute right-4 top-4 md:right-8 md:top-8"
+            on:click={() => (displayLogin = !displayLogin)}>
+        {!displayLogin ? 'Login' : 'Signup'}
     </Button>
     <div class="relative hidden lg:flex h-full flex-col bg-muted p-10 text-white dark:border-r">
         <div
