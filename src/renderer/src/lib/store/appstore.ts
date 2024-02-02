@@ -40,6 +40,7 @@ export interface User {
 }
 
 export interface UserState {
+    isLoading: boolean;
     hasAuth: boolean;
     user: User | null;
 }
@@ -132,6 +133,22 @@ function createAppStore(initialState: AppStore) {
         });
     }
 
+
+    function finishLoading() {
+        update(value => {
+            value.auth.isLoading = false;
+            return value;
+        });
+    }
+
+    function updateUser(user: User | null) {
+        update(value => {
+            value.auth.hasAuth = user !== null;
+            value.auth.user = user;
+            return value;
+        });
+    }
+
     return {
         subscribe, set, update,
         createNewChat,
@@ -139,7 +156,8 @@ function createAppStore(initialState: AppStore) {
         toggleSidebar,
         setActiveLayout,
         addDocumentToQueue,
-        popDocumentFromQueue
+        popDocumentFromQueue,
+        updateUser, finishLoading
     };
 }
 
@@ -156,13 +174,9 @@ const initialAppState: AppStore = {
         items: []
     },
     auth: {
-        hasAuth: true,
-        user: {
-            name: 'John Foo',
-            userID: 'google-oauth2|103547991597142817347',
-            picture: 'https://avatars.githubusercontent.com/u/124599?v=4',
-            email: 'johnfoo@gmail.com',
-        }
+        isLoading: true,
+        hasAuth: false,
+        user: null
     }
 };
 
@@ -179,9 +193,6 @@ export const chatHistoryState = derived<typeof appState, ChatHistoryPreview[]>(a
         };
     }));
 
-export const authState = derived<typeof appState, User | null>(appState, ($store) => {
-    if ($store.auth.hasAuth) {
-        return $store.auth.user!;
-    }
-    return null;
+export const authState = derived<typeof appState, UserState>(appState, ($store) => {
+    return $store.auth;
 });
