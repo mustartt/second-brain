@@ -7,9 +7,10 @@
     import QueuePage from "$lib/components/queue/QueuePage.svelte";
     import FrontPage from "$lib/components/front-page/FrontPage.svelte";
     import {Loader2Icon} from "lucide-svelte";
-    import {firebaseAuth} from "$lib/services/auth-service";
+    import {firebaseAuth} from "$lib/services/firebase-service";
     import {onAuthStateChanged} from 'firebase/auth';
     import {toast} from "svelte-sonner";
+    import Home from "$lib/components/home/Home.svelte";
 
     let activeTab: Layout;
     let hasAuth: boolean;
@@ -17,7 +18,7 @@
     let displayLogoutTimeoutID: any;
 
     const layoutMap: Record<Layout, ComponentType | null> = {
-        'home': null,
+        'home': Home,
         'answer': null,
         'chat': ChatPage,
         'files': null,

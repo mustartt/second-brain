@@ -1,7 +1,7 @@
 <script>
     import {Button} from '$lib/components/ui/button';
     import {toast} from 'svelte-sonner';
-    import {logout} from '$lib/services/auth-service';
+    import {logout} from '$lib/services/firebase-service';
 
     async function handleLogout() {
         try {

@@ -3,8 +3,8 @@ import {electronAPI} from '@electron-toolkit/preload';
 
 // Custom APIs for renderer
 const api = {
-    registerAuthTokenHandler: (callback: (idToken: string) => void) => {
-        ipcRenderer.on('auth:token', (_, ...args) => callback(args[0]));
+    startFileUpload: (file: string, token: string) => {
+        ipcRenderer.send('file:upload', file, token);
     }
 };
 

@@ -6,7 +6,7 @@
     import {Loader2Icon} from "lucide-svelte";
     import GoogleIcon from "$lib/components/ui/icons/GoogleIcon.svelte";
     import {signInWithPopup, signInAnonymously} from 'firebase/auth';
-    import {firebaseAuth, googleAuthProvider} from "$lib/services/auth-service";
+    import {firebaseAuth, googleAuthProvider} from "$lib/services/firebase-service";
     import {toast} from "svelte-sonner";
 
     let className: string | undefined | null = undefined;

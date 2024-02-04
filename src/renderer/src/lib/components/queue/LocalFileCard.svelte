@@ -1,9 +1,13 @@
 <script lang="ts">
     import FileDrop from '$lib/components/queue/FileDrop.svelte';
     import * as Card from '$lib/components/ui/card';
+    import {getAuthToken} from "$lib/services/firebase-service";
 
-    function handler(files: File[]) {
-        console.log(files);
+    async function handler(files: File[]) {
+        for (const file of files) {
+            const token = await getAuthToken();
+            (window.api as any).startFileUpload(file.path, token);
+        }
     }
 </script>
 <Card.Root>

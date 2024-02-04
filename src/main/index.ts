@@ -1,9 +1,10 @@
-import {app, BrowserWindow} from 'electron';
+import {app, BrowserWindow, ipcMain} from 'electron';
 import {join} from 'path';
 import express from 'express';
 import {electronApp, optimizer, is} from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 import * as path from "node:path";
+import {FileUploadService} from "./services/file-upload-service";
 
 if (process.defaultApp) {
     if (process.argv.length >= 2) {
@@ -84,6 +85,9 @@ app.whenReady().then(() => {
     app.on('browser-window-created', (_, window) => {
         optimizer.watchWindowShortcuts(window);
     });
+
+    const fileService = new FileUploadService(ipcMain);
+    console.log('created FileUploadService', fileService);
 
     createWindow();
 
