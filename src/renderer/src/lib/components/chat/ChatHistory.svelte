@@ -3,21 +3,28 @@
     import {SquarePenIcon} from 'lucide-svelte';
     import ChatHistoryItem from '$lib/components/chat/ChatHistoryItem.svelte';
     import {appState, type ChatHistoryPreview, chatHistoryState} from '$lib/store/appstore';
-    import {onDestroy} from 'svelte';
+    import {onDestroy, onMount} from 'svelte';
     import * as Tooltip from "$lib/components/ui/tooltip";
+    import {createNewChatHistory, deleteChatHistory, getAllChatHistory} from "$lib/services/chat-service";
 
     let history: ChatHistoryPreview[];
     const unsubscribe = chatHistoryState.subscribe((value) => (history = value));
 
     function deleteHandler(id: string) {
-        appState.deleteChat(id);
+        deleteChatHistory(id);
     }
 
     function createNewChat() {
-        appState.createNewChat();
+        createNewChatHistory();
     }
 
-    onDestroy(unsubscribe);
+    onMount(() => {
+        getAllChatHistory();
+    });
+
+    onDestroy(() => {
+        unsubscribe();
+    });
 </script>
 
 <div class="flex flex-col pr-2">

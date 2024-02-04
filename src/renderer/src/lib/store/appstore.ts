@@ -17,19 +17,35 @@ export interface SidebarItem {
 }
 
 interface ChatSettings {
-
+    model: string;
+    temperature: number;
+    maxLength: number;
 }
 
-interface Chat {
+interface ChatMessage {
+    id: string;
+    role: string;
+    shouldDisplay: boolean;
+    content: string;
+    context: any; // todo: add context type
+}
+
+export interface Chat {
     id: string;
     name: string;
-    history: any; // todo: add history type
+    history: ChatMessage[];
     settings: ChatSettings;
 }
 
 export interface ChatHistoryPreview {
     id: string;
     name: string;
+}
+
+export interface ChatState {
+    isLoading: boolean;
+    activeChat: Chat | null;
+    history: Chat[];
 }
 
 export interface User {
@@ -67,10 +83,7 @@ export interface DocumentQueue {
 
 export interface AppStore {
     layout: LayoutState;
-    chats: {
-        activeChat: Chat | null;
-        history: Chat[]
-    };
+    chats: ChatState;
     queue: DocumentQueue;
     auth: UserState;
 }
@@ -79,17 +92,23 @@ function createAppStore(initialState: AppStore) {
     const {subscribe, set, update} = writable<AppStore>(initialState);
 
     function createNewChat() {
+        const defaultChatSettings = {
+            model: 'gpt-3.5-turbo',
+            temperature: 0.8,
+            maxLength: 256
+        };
         const newChatObject: Chat = {
             id: uuidv4(),
             name: 'New Chat',
             history: [],
-            settings: {}
+            settings: defaultChatSettings
         };
         update(value => {
             value.chats.history = [newChatObject, ...value.chats.history];
             value.chats.activeChat = newChatObject;
             return value;
         });
+        return newChatObject;
     }
 
     function deleteChat(id: string) {
@@ -101,6 +120,22 @@ function createAppStore(initialState: AppStore) {
             return value;
         });
     }
+
+    function loadChats(chats: Chat[]) {
+        update(value => {
+            value.chats.activeChat = null;
+            value.chats.history = chats;
+            return value;
+        });
+    }
+
+    function setChatsIsLoading(isLoading: boolean) {
+        update(value => {
+            value.chats.isLoading = isLoading;
+            return value;
+        });
+    }
+
 
     function toggleSidebar() {
         update(value => {
@@ -153,6 +188,8 @@ function createAppStore(initialState: AppStore) {
         subscribe, set, update,
         createNewChat,
         deleteChat,
+        loadChats,
+        setChatsIsLoading,
         toggleSidebar,
         setActiveLayout,
         addDocumentToQueue,
@@ -167,6 +204,7 @@ const initialAppState: AppStore = {
         activeLayout: 'home'
     },
     chats: {
+        isLoading: true,
         activeChat: null,
         history: []
     },
