@@ -11,7 +11,7 @@
     const unsubscribe = chatHistoryState.subscribe((value) => (history = value));
 
     function deleteHandler(id: string) {
-        deleteChatHistory(id);
+
     }
 
     function createNewChat() {
@@ -43,7 +43,7 @@
     </div>
     <div class="flex-grow flex flex-col min-w-40 max-w-44 overflow-y-auto overflow-x-hidden">
         {#each history as item}
-            <ChatHistoryItem id={item.id} name={item.name} deleteHandler={deleteHandler}/>
+            <ChatHistoryItem id={item.id} name={item.name}/>
         {/each}
     </div>
 </div>

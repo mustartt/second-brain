@@ -129,6 +129,15 @@ function createAppStore(initialState: AppStore) {
         });
     }
 
+    function setActiveChat(id: string | null) {
+        update(value => {
+            const [chat, ...rest] = value.chats.history
+                .filter(history => history.id === id);
+            value.chats.activeChat = chat || null;
+            return value;
+        });
+    }
+
     function setChatsIsLoading(isLoading: boolean) {
         update(value => {
             value.chats.isLoading = isLoading;
@@ -190,6 +199,7 @@ function createAppStore(initialState: AppStore) {
         deleteChat,
         loadChats,
         setChatsIsLoading,
+        setActiveChat,
         toggleSidebar,
         setActiveLayout,
         addDocumentToQueue,
