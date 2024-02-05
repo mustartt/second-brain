@@ -19,7 +19,6 @@ export async function getAllChatHistory() {
             }));
 
         appState.loadChats(chats);
-        console.log(JSON.stringify(chats));
         appState.setChatsIsLoading(false);
     } catch (err) {
         console.log(err);
@@ -57,6 +56,7 @@ export async function deleteChatHistory(id: string) {
     } catch (err) {
         console.log(err);
         toast.error('An error has occurred');
+
     }
 }
 
