@@ -5,3 +5,6 @@ out
 *.log*
 .vscode
 .idea
+functions/venv
+functions/*.iml
+*.iml

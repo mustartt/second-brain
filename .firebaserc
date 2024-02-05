@@ -1,0 +1,11 @@
+{
+  "projects": {
+    "default": "speedy-atom-413006"
+  },
+  "targets": {},
+  "etags": {
+    "speedy-atom-413006": {
+      "extensionInstances": {}
+    }
+  }
+}
