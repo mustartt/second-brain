@@ -5,21 +5,22 @@
     import {Button} from "$lib/components/ui/button";
     import {authState, type User} from "$lib/store/appstore";
     import {onDestroy} from "svelte";
+    import '../../../assets/chatlogo.svg';
 
     export let content: string;
     export let isUser: boolean = true;
 
-    let user: User | null;
-    const unsub = authState.subscribe(value => (user = value));
+    let user: User;
+    const unsub = authState.subscribe(value => (user = value.user));
     onDestroy(unsub);
 </script>
 
 <div class="flex flex-col">
     <div class="flex flex-row justify-between">
         <Avatar.Root class="w-8 h-8 border-2">
-            <Avatar.Image src={isUser ? user?.picture : 'chat_logo.svg'}
-                          alt={isUser ? 'user' : 'chatgpt'}/>
-            <Avatar.Fallback>User</Avatar.Fallback>
+            <Avatar.Image
+                src={isUser ? user.picture : 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg'}
+                alt={isUser ? 'user' : 'chatgpt'}/>
         </Avatar.Root>
         <div class="flex flex-col w-full">
             <div class="flex flex-row justify-between items-center">

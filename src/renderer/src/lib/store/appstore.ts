@@ -22,7 +22,7 @@ interface ChatSettings {
     maxLength: number;
 }
 
-interface ChatMessage {
+export interface ChatMessage {
     id: string;
     role: string;
     shouldDisplay: boolean;
@@ -35,6 +35,8 @@ export interface Chat {
     name: string;
     history: ChatMessage[];
     settings: ChatSettings;
+    isSendBlocked: boolean;
+    isSaving: boolean;
 }
 
 export interface ChatHistoryPreview {
@@ -101,7 +103,9 @@ function createAppStore(initialState: AppStore) {
             id: uuidv4(),
             name: 'New Chat',
             history: [],
-            settings: defaultChatSettings
+            settings: defaultChatSettings,
+            isSendBlocked: false,
+            isSaving: false
         };
         update(value => {
             value.chats.history = [newChatObject, ...value.chats.history];
@@ -125,6 +129,33 @@ function createAppStore(initialState: AppStore) {
         update(value => {
             value.chats.activeChat = null;
             value.chats.history = chats;
+            return value;
+        });
+    }
+
+    function addActiveChatMessage(message: ChatMessage) {
+        update(value => {
+            if (value.chats.activeChat) {
+                value.chats.activeChat.history.push(message);
+            }
+            return value;
+        });
+    }
+
+    function setActiveChatIsBlocked(blocked: boolean) {
+        update(value => {
+            if (value.chats.activeChat) {
+                value.chats.activeChat.isSendBlocked = blocked;
+            }
+            return value;
+        });
+    }
+
+    function setActiveChatIsSaving(saving: boolean) {
+        update(value => {
+            if (value.chats.activeChat) {
+                value.chats.activeChat.isSaving = saving;
+            }
             return value;
         });
     }
@@ -200,6 +231,9 @@ function createAppStore(initialState: AppStore) {
         loadChats,
         setChatsIsLoading,
         setActiveChat,
+        setActiveChatIsBlocked,
+        addActiveChatMessage,
+        setActiveChatIsSaving,
         toggleSidebar,
         setActiveLayout,
         addDocumentToQueue,

@@ -37,6 +37,14 @@
 
     onMount(() => {
         setTimeout(() => {
+            const warning = document.getElementsByClassName('firebase-emulator-warning');
+            for (const element of warning) {
+                (element as HTMLElement).style.display = 'none';
+                toast.info('Disabled firebase emulator warnings');
+            }
+        }, 3000);
+
+        setTimeout(() => {
             onAuthStateChanged(firebaseAuth, user => {
                 console.log('auth:changed', user);
                 if (user) {
