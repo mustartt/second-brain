@@ -8,3 +8,5 @@ out
 functions/venv
 functions/*.iml
 *.iml
+
+services/embedding_service/.env

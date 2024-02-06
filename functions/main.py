@@ -2,6 +2,7 @@
 # To get started, simply uncomment the below code or create your own.
 # Deploy with `firebase deploy`
 from datetime import datetime
+from flask import jsonify
 from uuid import uuid4
 
 from firebase_functions import https_fn
@@ -44,13 +45,19 @@ def ingest_file(req: https_fn.Request) -> https_fn.Response:
         return https_fn.Response()
     file = req.files['file']
 
+    # todo: figure why client init wont work in the global scope?
     db_client = firestore.client()
     storage_client = storage.Client()
-
     new_obj_id = str(uuid4())
 
     bucket = storage_client.bucket('file_upload')
     blob = bucket.blob(new_obj_id)
+    blob.metadata = {
+        'filename': file.filename,
+        'userId': uid
+    }
+    blob.content_type = file.content_type
+
     blob.upload_from_file(file.stream)
 
     file_data = {
@@ -58,8 +65,7 @@ def ingest_file(req: https_fn.Request) -> https_fn.Response:
         'timestamp': str(datetime.now()),
         'status': 'uploaded'
     }
-
     queue = db_client.collection('users').document(uid).collection('file_queue')
     queue.document(new_obj_id).set(file_data)
 
-    return https_fn.Response(f"added file {new_obj_id} for user {uid}", status=201)
+    return jsonify(file_data)
