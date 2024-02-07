@@ -6,19 +6,13 @@ from flask import jsonify
 from uuid import uuid4
 
 from firebase_functions import https_fn
-from firebase_admin import initialize_app, auth, firestore
+from firebase_admin import initialize_app, firestore
 from firebase_functions.options import CorsOptions
 from google.cloud import storage
 
+from fn_impl.utils import verify_id_token
+
 initialize_app()
-
-
-def verify_id_token(id_token):
-    try:
-        decoded_token = auth.verify_id_token(id_token)
-        return decoded_token
-    except auth.InvalidIdTokenError:
-        return None
 
 
 @https_fn.on_request(

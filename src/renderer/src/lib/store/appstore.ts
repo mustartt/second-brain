@@ -63,30 +63,9 @@ export interface UserState {
     user: User | null;
 }
 
-export type Document = LocalDocument;
-type DocumentStatus = 'pending' | 'started' | 'finished' | 'error';
-
-export interface IDocument {
-    id: string;
-    name: string;
-    path: string;
-    timeAdded: Date;
-    status: DocumentStatus;
-    error: string | null;
-}
-
-export interface LocalDocument extends IDocument {
-    type: 'fs';
-}
-
-export interface DocumentQueue {
-    items: Document[];
-}
-
 export interface AppStore {
     layout: LayoutState;
     chats: ChatState;
-    queue: DocumentQueue;
     auth: UserState;
 }
 
@@ -191,24 +170,6 @@ function createAppStore(initialState: AppStore) {
         });
     }
 
-    function addDocumentToQueue(doc: Document) {
-        update(value => {
-            value.queue.items.push(doc);
-            return value;
-        });
-    }
-
-    function popDocumentFromQueue(callback: (doc: Document | null) => void) {
-        update(value => {
-            if (value.queue.items.length > 0) {
-                const doc = value.queue.items.shift();
-                callback(doc);
-            }
-            return value;
-        });
-    }
-
-
     function finishLoading() {
         update(value => {
             value.auth.isLoading = false;
@@ -236,8 +197,6 @@ function createAppStore(initialState: AppStore) {
         setActiveChatIsSaving,
         toggleSidebar,
         setActiveLayout,
-        addDocumentToQueue,
-        popDocumentFromQueue,
         updateUser, finishLoading
     };
 }
@@ -251,9 +210,6 @@ const initialAppState: AppStore = {
         isLoading: true,
         activeChat: null,
         history: []
-    },
-    queue: {
-        items: []
     },
     auth: {
         isLoading: true,

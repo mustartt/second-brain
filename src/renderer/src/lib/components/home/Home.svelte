@@ -1,18 +1,9 @@
 <script>
     import {Button} from '$lib/components/ui/button';
-    import {firebaseAuth} from '$lib/services/firebase-service';
-    import {getIdToken} from 'firebase/auth';
-    import axios from 'axios';
+    import {PromisePool} from '$lib/services/upload-service';
 
-    async function test() {
-        const token = await getIdToken(firebaseAuth.currentUser);
-        const data = {};
-        const result = await axios.post(
-            'http://127.0.0.1:5001/speedy-atom-413006/us-central1/ingest_file',
-            data,
-            {headers: {'Authorization': `Bearer ${token}`}},
-        );
-        console.log(result);
+    function test() {
+
     }
 </script>
 
