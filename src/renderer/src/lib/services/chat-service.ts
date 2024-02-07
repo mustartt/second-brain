@@ -8,7 +8,7 @@ export async function getAllChatHistory() {
     try {
         const uid = get(authState).user.userID;
         const chatsCol =
-            collection(doc(firestore, 'user', uid), 'chats');
+            collection(doc(firestore, 'users', uid), 'chats');
         const snapshot = await getDocs(chatsCol);
 
         const chats = snapshot.docs
@@ -32,7 +32,7 @@ export async function createNewChatHistory() {
     try {
         const uid = get(authState).user.userID;
         const chatDoc =
-            doc(doc(firestore, 'user', uid),
+            doc(doc(firestore, 'users', uid),
                 'chats', newChat.id);
         await setDoc(chatDoc, newChat);
     } catch (err) {
@@ -47,7 +47,7 @@ export async function deleteChatHistory(id: string) {
     try {
         const uid = get(authState).user.userID;
         const chatDoc =
-            doc(doc(firestore, 'user', uid),
+            doc(doc(firestore, 'users', uid),
                 'chats', id);
         const data = await getDoc(chatDoc);
 
