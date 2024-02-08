@@ -1,6 +1,6 @@
 import {fileQueueState} from "$lib/store/file-queue";
-import {ref, uploadBytesResumable} from "firebase/storage";
-import {storage} from "$lib/services/firebase-service";
+import {ref, uploadBytesResumable, type UploadMetadata} from "firebase/storage";
+import {firebaseAuth, storage} from "$lib/services/firebase-service";
 import {v4 as uuidv4} from 'uuid';
 import {get} from "svelte/store";
 import {PromisePool} from "$lib/services/promise-pool-service";
@@ -30,9 +30,19 @@ export function createFileUpload(file: File) {
     const entry = state.get(handle);
     if (entry === undefined) return;
 
+    // add upload metadata
+
     defaultUploadPool.submit(async () => {
         const storageRef = ref(storage, 'files/' + handle);
-        const task = uploadBytesResumable(storageRef, entry.fileHandle);
+        const metadata: UploadMetadata = {
+            contentType: file.type,
+            customMetadata: {
+                filename: file.name,
+                path: file.path,
+                userId: firebaseAuth.currentUser.uid
+            }
+        };
+        const task = uploadBytesResumable(storageRef, entry.fileHandle, metadata);
         entry.uploadHandle = task;
         await new Promise<void>(resolve => {
             task.on('state_changed',

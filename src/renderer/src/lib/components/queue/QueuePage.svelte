@@ -37,12 +37,12 @@
     <div class="flex-0 flex flex-row pt-4 pb-4">
         <h1 class="font-bold text-3xl tracking-tight">File Queue</h1>
     </div>
-    <div class="flex-1 flex flex-row overflow-x-hidden space-x-4">
+    <div class="flex-1 flex flex-row space-x-4">
         <div class="flex flex-col w-2/3">
             <LocalFileCard/>
         </div>
         <div class="flex justify-center w-1/3">
-            <div class="w-full rounded-md border">
+            <div class="w-full rounded-md border overflow-y-auto">
                 <Table.Root {...$tableAttrs}>
                     <Table.Header>
                         {#each $headerRows as headerRow}
