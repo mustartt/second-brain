@@ -34,61 +34,64 @@ export function createFileUpload(file: File) {
         const storageRef = ref(storage, 'files/' + handle);
         const task = uploadBytesResumable(storageRef, entry.fileHandle);
         entry.uploadHandle = task;
-        task.on('state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes);
-                switch (snapshot.state) {
-                    case 'running':
-                        fileQueueState.update(state => {
-                            const entry = state.get(handle);
-                            if (entry !== undefined) {
-                                entry.progress.progress = progress;
-                                entry.progress.status = 'uploading';
-                                entry.progress.error = null;
-                            }
-                            return state;
-                        });
-                        break;
-                    case 'paused':
-                        fileQueueState.update(state => {
-                            const entry = state.get(handle);
-                            if (entry !== undefined) {
-                                entry.progress.status = 'paused';
-                                entry.progress.error = null;
-                            }
-                            return state;
-                        });
-                        break;
-                }
-            },
-            (error) => {
-                fileQueueState.update(state => {
-                    const entry = state.get(handle);
-                    if (entry !== undefined) {
-                        entry.progress.status = 'failed';
-                        entry.progress.error = error.message;
+        await new Promise<void>(resolve => {
+            task.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes);
+                    switch (snapshot.state) {
+                        case 'running':
+                            fileQueueState.update(state => {
+                                const entry = state.get(handle);
+                                if (entry !== undefined) {
+                                    entry.progress.progress = progress;
+                                    entry.progress.status = 'uploading';
+                                    entry.progress.error = null;
+                                }
+                                return state;
+                            });
+                            break;
+                        case 'paused':
+                            fileQueueState.update(state => {
+                                const entry = state.get(handle);
+                                if (entry !== undefined) {
+                                    entry.progress.status = 'paused';
+                                    entry.progress.error = null;
+                                }
+                                return state;
+                            });
+                            break;
                     }
-                    return state;
-                });
-            },
-            () => {
-                fileQueueState.update(state => {
-                    const entry = state.get(handle);
-                    if (entry !== undefined) {
-                        entry.progress.progress = 1;
-                        entry.progress.status = 'completed';
-                        entry.progress.error = null;
-                    }
-                    return state;
-                });
-
-                setTimeout(() => {
-                    fileUploadCompletionPool.submit(async () => {
-                        deleteFileUpload(handle);
-                        await new Promise(resolve => setTimeout(resolve, 500));
+                },
+                (error) => {
+                    fileQueueState.update(state => {
+                        const entry = state.get(handle);
+                        if (entry !== undefined) {
+                            entry.progress.status = 'failed';
+                            entry.progress.error = error.message;
+                        }
+                        return state;
                     });
-                }, 10_000);
-            });
+                    resolve();
+                },
+                () => {
+                    fileQueueState.update(state => {
+                        const entry = state.get(handle);
+                        if (entry !== undefined) {
+                            entry.progress.progress = 1;
+                            entry.progress.status = 'completed';
+                            entry.progress.error = null;
+                        }
+                        return state;
+                    });
+                    setTimeout(() => {
+                        fileUploadCompletionPool.submit(async () => {
+                            deleteFileUpload(handle);
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        });
+                    }, 10_000);
+                    resolve();
+                });
+        });
     });
 }
 
