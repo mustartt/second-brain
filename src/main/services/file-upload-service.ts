@@ -19,7 +19,7 @@ export class FileUploadService {
         this.ipc.on('file:upload', async (_,
                                           id: FileUploadID, file: string, token: string,) => {
             await this.uploadFile(id,
-                'http://127.0.0.1:5001/speedy-atom-413006/us-central1/ingest_file',
+                'https://us-central1-speedy-atom-413006.cloudfunctions.net/ingest_file',
                 file, token
             );
         });

@@ -1,6 +1,5 @@
-# Welcome to Cloud Functions for Firebase for Python!
-# To get started, simply uncomment the below code or create your own.
-# Deploy with `firebase deploy`
+from wsgiref.headers import Headers
+
 from datetime import datetime
 from flask import jsonify
 from uuid import uuid4
@@ -13,6 +12,7 @@ from google.cloud import storage
 from fn_impl.utils import verify_id_token
 
 initialize_app()
+
 
 
 @https_fn.on_request(
@@ -44,7 +44,7 @@ def ingest_file(req: https_fn.Request) -> https_fn.Response:
     storage_client = storage.Client()
     new_obj_id = str(uuid4())
 
-    bucket = storage_client.bucket('file_upload')
+    bucket = storage_client.bucket('speedy-atom-413006.appspot.com')
     blob = bucket.blob(new_obj_id)
     blob.metadata = {
         'filename': file.filename,

@@ -1,6 +1,5 @@
 <script>
     import {Button} from '$lib/components/ui/button';
-    import {PromisePool} from '$lib/services/upload-service';
 
     function test() {
 

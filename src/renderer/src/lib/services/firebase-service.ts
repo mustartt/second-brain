@@ -30,7 +30,7 @@ export async function getAuthToken() {
 
 export const googleAuthProvider = new GoogleAuthProvider();
 
-connectAuthEmulator(firebaseAuth, "http://127.0.0.1:9099");
-connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
-connectStorageEmulator(storage, "127.0.0.1", 9199);
-connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+// connectAuthEmulator(firebaseAuth, "http://127.0.0.1:9099");
+// connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
+// connectStorageEmulator(storage, "127.0.0.1", 9199);
+// connectFunctionsEmulator(functions, "127.0.0.1", 5001);

@@ -22,8 +22,11 @@
         }),
         table.column({
             header: '',
-            accessor: 'id',
-            cell: ({value}) => createRender(FileAction, {id: value})
+            accessor: (value) => value,
+            cell: ({value}) => createRender(FileAction, {
+                id: value.id,
+                status: value.progress.status
+            })
         })
     ]);
     const {headerRows, pageRows, tableAttrs, tableBodyAttrs} =

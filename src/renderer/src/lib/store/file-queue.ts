@@ -1,62 +1,24 @@
-import type {UploadProgress} from "../../env";
-import {derived, readable, writable} from "svelte/store";
-import {v4 as uuidv4} from 'uuid';
+import {derived, writable} from "svelte/store";
+import type {UploadTask} from "firebase/storage";
+
+export type FileUploadStatus = 'queued' | 'paused' | 'uploading' | 'failed' | 'completed';
+
+export interface FileUploadProgress {
+    status: FileUploadStatus,
+    error: string | null;
+    progress: number,
+}
 
 interface Document {
     id: string;
     name: string;
     timeAdded: Date;
-    progress: UploadProgress | null;
+    fileHandle: File;
+    uploadHandle: UploadTask | null;
+    progress: FileUploadProgress;
 }
 
-
-function createFileQueueStore() {
-    const {
-        subscribe,
-        update,
-        set
-    } = writable<Map<string, Document>>(new Map());
-
-    function addDocument(name: string) {
-        const id = uuidv4();
-        const time = new Date();
-        update(value => {
-            value.set(id, {
-                id, name,
-                timeAdded: time,
-                progress: null
-            });
-            return value;
-        });
-        return id;
-    }
-
-    function updateDocument(id: string, progress: UploadProgress) {
-        update(value => {
-            const doc = value.get(id);
-            if (doc) {
-                doc.progress = progress;
-            }
-            return value;
-        });
-    }
-
-    function removeDocument(id: string) {
-        update(value => {
-            value.delete(id);
-            return value;
-        });
-    }
-
-    return {
-        subscribe, update, set,
-        addDocument,
-        updateDocument,
-        removeDocument
-    };
-}
-
-export const fileQueueState = createFileQueueStore();
+export const fileQueueState = writable<Map<string, Document>>(new Map());
 export const fileQueueView = derived(fileQueueState, ($store) => {
     const items = Array.from($store.entries());
     items.sort((a, b) => {

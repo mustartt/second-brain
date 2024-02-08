@@ -4,7 +4,6 @@
 export type FileUploadID = string;
 
 export interface UploadProgress {
-    id: string;
     status: 'queued' | 'uploading' | 'failed' | 'completed',
     error: string | null;
     progress: number,
