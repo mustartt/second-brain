@@ -1,10 +1,12 @@
-from wsgiref.headers import Headers
+import json
+
+import pathlib
 
 from datetime import datetime
 from flask import jsonify
 from uuid import uuid4
 
-from firebase_functions import https_fn
+from firebase_functions import https_fn, storage_fn
 from firebase_admin import initialize_app, firestore
 from firebase_functions.options import CorsOptions
 from google.cloud import storage
@@ -13,6 +15,12 @@ from fn_impl.utils import verify_id_token
 
 initialize_app()
 
+
+@storage_fn.on_object_finalized(bucket='speedy-atom-413006.appspot.com')
+def archived_bucket(event: storage_fn.CloudEvent[storage_fn.StorageObjectData]):
+    file_path = pathlib.PurePath(event.data.name)
+
+    print(file_path, json.dumps(event.data.metadata))
 
 
 @https_fn.on_request(

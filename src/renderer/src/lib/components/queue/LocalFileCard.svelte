@@ -14,7 +14,7 @@
     <Card.Header>
         <Card.Title>Individual Files</Card.Title>
         <Card.Description>
-            Drag you individual files here to quickly add them to your index.
+            Drag individual files here to quickly add them to your index.
             You can add as many as you want. Max Size 1GB.
         </Card.Description>
     </Card.Header>
