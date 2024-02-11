@@ -6,32 +6,18 @@
     import ChatPromptTextArea from '$lib/components/chat/ChatPromptTextArea.svelte';
     import {appState, type Chat, type ChatMessage} from "$lib/store/appstore";
     import {v4 as uuidv4} from 'uuid';
-    import {saveChatHistory} from "$lib/services/chat-service";
+    import {saveChatHistory, sendUserMessage} from "$lib/services/chat-service";
 
     export let isSettingsOpen: boolean;
     export let activeChat: Chat;
 
     let currentTextValue = '';
 
-    function sendUserMessage() {
-
-        const newChatMessage: ChatMessage = {
-            id: uuidv4(),
-            role: 'user',
-            content: currentTextValue.trim(),
-            context: {},
-            shouldDisplay: true
-        };
-
-        appState.setActiveChatIsBlocked(true);
-        appState.addActiveChatMessage(newChatMessage);
-
+    async function sendUserMessageHandler() {
+        const newChatValue = currentTextValue.trim();
         currentTextValue = '';
 
-        setTimeout(() => {
-            appState.setActiveChatIsBlocked(false);
-        }, 3000);
-
+        await sendUserMessage(newChatValue);
         saveChatStateDebounce();
     }
 
@@ -42,7 +28,7 @@
         saveChatStateDebounce();
 
         if (event.key === 'Enter' && !event.shiftKey) {
-            sendUserMessage();
+            sendUserMessageHandler();
             event.preventDefault();
         }
     }
@@ -67,6 +53,9 @@
                         content={message.content}
                         isUser={message.role === 'user'}/>
                 {/each}
+                <div class="w-full min-h-32">
+
+                </div>
             </div>
         </div>
         <div class="flex-grow-0 flex flex-col">
@@ -91,7 +80,7 @@
                     </Button>
                     <Button variant="outline"
                             disabled={activeChat.isSendBlocked}
-                            on:click={sendUserMessage}>
+                            on:click={sendUserMessageHandler}>
                         <SendIcon class="w-4 h-4"/>
                     </Button>
                 </div>

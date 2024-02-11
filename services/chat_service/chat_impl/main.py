@@ -35,6 +35,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponseChunk(BaseModel):
     id: str
+    is_response: bool
     chunk: str
     is_last: bool
 
@@ -54,6 +55,7 @@ async def chat(request: ChatRequest):
     )
 
     async def response_generator():
+        response_id = str(uuid.uuid4())
         chat_history = [
             ChatMessage(role=message.role, content=message.message)
             for message in request.history
@@ -62,17 +64,19 @@ async def chat(request: ChatRequest):
             message=request.message,
             chat_history=chat_history
         )
-        response_id = str(uuid.uuid4())
+
         async for res in response.async_response_gen():
             chunk = ChatResponseChunk(
                 id=response_id,
                 chunk=res,
-                is_last=False
+                is_last=False,
+                is_response=True,
             )
             yield chunk.json() + '\n'
         yield ChatResponseChunk(
             id=response_id,
             chunk='',
+            is_response=True,
             is_last=True).json() + '\n'
 
     return StreamingResponse(
