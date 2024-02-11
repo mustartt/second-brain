@@ -3,6 +3,7 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/services/chat_service/venv" />
       <excludeFolder url="file://$MODULE_DIR$/services/embedding_service/venv" />
     </content>
     <orderEntry type="inheritedJdk" />

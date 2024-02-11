@@ -2,10 +2,9 @@ import logging
 import time
 
 from uuid import uuid4
-from flask import Flask, jsonify, Response, request, g
+from flask import Flask, jsonify, request, g
 from google.cloud import storage
 
-from file_parser import FileParser
 from service import EmbeddingService
 
 
