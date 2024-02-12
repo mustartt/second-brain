@@ -1,5 +1,5 @@
 import {appState, authState, type Chat, type ChatMessage} from "$lib/store/appstore";
-import {firestore} from "$lib/services/firebase-service";
+import {firebaseAuth, firestore} from "$lib/services/firebase-service";
 import {collection, doc, getDocs, getDoc, setDoc, deleteDoc} from 'firebase/firestore';
 import {get} from "svelte/store";
 import {toast} from "svelte-sonner";
@@ -94,10 +94,11 @@ interface ChatResponseChunk {
 }
 
 export async function* generateResponse(message: string, chat: Chat) {
-    const response = await fetch('http://localhost:8000/api/v1/chat', {
+    const response = await fetch('https://chat-service-uhefmk7o7q-uc.a.run.app/api/v1/chat', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await firebaseAuth.currentUser.getIdToken()}`,
         },
         body: JSON.stringify({
             'model': chat.settings.model,

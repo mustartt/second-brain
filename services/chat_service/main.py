@@ -8,16 +8,19 @@ from chat_impl.main import chat_router
 
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO)
 
-app = FastAPI()
+def create_app():
+    logging.basicConfig(level=logging.INFO)
+    fastapi = FastAPI()
+    fastapi.add_middleware(
+        CORSMiddleware,
+        allow_origins=['*'],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    fastapi.include_router(chat_router)
+    return fastapi
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-app.include_router(chat_router)
+app = create_app()

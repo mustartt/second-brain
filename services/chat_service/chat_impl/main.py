@@ -4,13 +4,15 @@ import logging
 import os
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from llama_index.agent import OpenAIAgent
 from llama_index.core.llms.types import ChatMessage
 from llama_index.llms import OpenAI
 
 from pydantic import BaseModel
+
+from chat_impl.auth import get_current_user
 
 chat_router = APIRouter(prefix='/api/v1')
 
@@ -40,9 +42,20 @@ class ChatResponseChunk(BaseModel):
     is_last: bool
 
 
+class AvailableModelResponse(BaseModel):
+    available: list[str]
+
+
+@chat_router.get('/available')
+async def get_available(user: dict = Depends(get_current_user)):
+    user_claims = user.get('claims', {})
+    # get available models through user claims
+    return AvailableModelResponse(available=['gpt-3.5-turbo', 'gpt-4'])
+
+
 @chat_router.post('/chat')
-async def chat(request: ChatRequest):
-    logging.info(request)
+async def chat(request: ChatRequest, user: dict = Depends(get_current_user)):
+    logging.info(f"chat request uid: {user['uid']}")
 
     llm = OpenAI(
         api_key=os.getenv('OPENAI_API_KEY'),
