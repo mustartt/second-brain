@@ -1,6 +1,6 @@
 import {app, BrowserWindow, ipcMain} from 'electron';
 import {join} from 'path';
-import express from 'express';
+import express, {Express} from 'express';
 import {electronApp, optimizer, is} from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 import * as path from "node:path";
@@ -16,6 +16,7 @@ if (process.defaultApp) {
 }
 
 let mainWindow: BrowserWindow | null;
+let webserver: Express | null;
 
 const gotTheLock = app.requestSingleInstanceLock();
 
@@ -67,12 +68,18 @@ function createWindow(): void {
         mainWindow?.loadURL(process.env['ELECTRON_RENDERER_URL']);
     } else {
         console.log('loading in packaged mode');
-        const webserver = express();
-        webserver.use(express.static(join(__dirname, '../renderer')));
-        webserver.listen(3000, () => {
-            console.log('server loaded');
-            mainWindow?.loadURL('http://localhost:3000/index.html');
-        });
+        const prodUrl = 'http://localhost:3000/index.html';
+        if (!webserver) {
+            webserver = express();
+            webserver.use(express.static(join(__dirname, '../renderer')));
+            webserver.use(express.static(join(__dirname, '../../resources')));
+            webserver.listen(3000, () => {
+                console.log('server loaded');
+                mainWindow?.loadURL(prodUrl);
+            });
+        } else {
+            mainWindow?.loadURL(prodUrl);
+        }
     }
 }
 
@@ -95,7 +102,9 @@ app.whenReady().then(() => {
     app.on('activate', function () {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
-        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow();
+        }
     });
 });
 
