@@ -4,7 +4,7 @@ import express from 'express';
 import {electronApp, optimizer, is} from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 import * as path from "node:path";
-import {FileUploadService} from "./services/file-upload-service";
+// import {FileUploadService} from "./services/file-upload-service";
 
 if (process.defaultApp) {
     if (process.argv.length >= 2) {
@@ -59,7 +59,7 @@ function createWindow(): void {
         return {action: 'allow'};
     });
 
-    const fileService = new FileUploadService(ipcMain, mainWindow.webContents);
+    // const fileService = new FileUploadService(ipcMain, mainWindow.webContents);
 
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.

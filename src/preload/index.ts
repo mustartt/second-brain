@@ -8,23 +8,23 @@ let isFileSubscriberRegistered = false;
 
 const api: API = {
     startFileUpload: (file, token, callback) => {
-        const fileId = uuidv4();
-        ipcRenderer.send('file:upload', fileId, file, token);
-        if (callback) {
-            fileSubscribers.set(fileId, callback);
-        }
-        if (!isFileSubscriberRegistered) {
-            isFileSubscriberRegistered = true;
-            ipcRenderer.on('file:progress', (event, arg: UploadProgress) => {
-                const observer = fileSubscribers.get(arg.id);
-                if (observer) {
-                    observer(arg);
-                    if (arg.status === 'completed') {
-                        fileSubscribers.delete(arg.id);
-                    }
-                }
-            });
-        }
+        // const fileId = uuidv4();
+        // ipcRenderer.send('file:upload', fileId, file, token);
+        // if (callback) {
+        //     fileSubscribers.set(fileId, callback);
+        // }
+        // if (!isFileSubscriberRegistered) {
+        //     isFileSubscriberRegistered = true;
+        //     ipcRenderer.on('file:progress', (event, arg: UploadProgress) => {
+        //         const observer = fileSubscribers.get(arg.id);
+        //         if (observer) {
+        //             observer(arg);
+        //             if (arg.status === 'completed') {
+        //                 fileSubscribers.delete(arg.i);
+        //             }
+        //         }
+        //     });
+        // }
     }
 };
 
