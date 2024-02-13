@@ -1,20 +1,25 @@
-import asyncio
-import json
 import logging
 import os
 import uuid
+from typing import List, Any, Dict
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from llama_index.agent import OpenAIAgent
 from llama_index.core.llms.types import ChatMessage
-from llama_index.llms import OpenAI
+from llama_index.llms.openai import OpenAI
+from llama_index.schema import NodeWithScore
 
 from pydantic import BaseModel
 
+from app_ctx import ApplicationContext
 from chat_impl.auth import get_current_user
+from chat_impl.query_engine import ContextFactory, QueryEngineFactory
 
 chat_router = APIRouter(prefix='/api/v1')
+
+app_ctx = ApplicationContext()
+ctx_factory = ContextFactory(app_ctx)
+query_engine_factory = QueryEngineFactory(app_ctx, ctx_factory)
 
 
 class ChatRequestSettings(BaseModel):
@@ -35,13 +40,6 @@ class ChatRequest(BaseModel):
     message: str
 
 
-class ChatResponseChunk(BaseModel):
-    id: str
-    is_response: bool
-    chunk: str
-    is_last: bool
-
-
 class AvailableModelResponse(BaseModel):
     available: list[str]
 
@@ -53,44 +51,71 @@ async def get_available(user: dict = Depends(get_current_user)):
     return AvailableModelResponse(available=['gpt-3.5-turbo', 'gpt-4'])
 
 
+class ChatAgentTask(BaseModel):
+    completed: bool
+    event_type: str
+    event_id: str
+    parent_id: str
+    duration_s: float
+
+
+class ChatAgentSources(BaseModel):
+    score: float | None
+    text: str
+    metadata: Dict[str, Any]
+
+
+class ChatResponseChunk(BaseModel):
+    id: str
+    event_type: str
+    task: ChatAgentTask | None
+    error: str | None
+    response_chunk: str
+    sources: List[ChatAgentSources]
+
+
 @chat_router.post('/chat')
 async def chat(request: ChatRequest, user: dict = Depends(get_current_user)):
     logging.info(f"chat request uid: {user['uid']}")
 
-    llm = OpenAI(
+    response_llm = OpenAI(
         api_key=os.getenv('OPENAI_API_KEY'),
         model="gpt-3.5-turbo",
         temperature=request.settings.temperature,
         max_tokens=request.settings.max_token,
     )
-    agent = OpenAIAgent.from_tools(
-        tools=[], llm=llm, verbose=True
-    )
+    engine = query_engine_factory.get_query_engine(user['uid'], response_llm)
+
+    response_id = str(uuid.uuid4())
+    chat_history = [
+        ChatMessage(role=message.role, content=message.message)
+        for message in request.history
+    ]
 
     async def response_generator():
-        response_id = str(uuid.uuid4())
-        chat_history = [
-            ChatMessage(role=message.role, content=message.message)
-            for message in request.history
-        ]
-        response = await agent.astream_chat(
-            message=request.message,
-            chat_history=chat_history
-        )
-
-        async for res in response.async_response_gen():
-            chunk = ChatResponseChunk(
+        async for event in engine.chat(chat_history, request.message):
+            task = None
+            if event.task:
+                task = ChatAgentTask(
+                    completed=event.task.completed,
+                    event_type=event.task.event_type,
+                    event_id=event.task.event_id,
+                    parent_id=event.task.parent_id,
+                    duration_s=event.task.duration_s
+                )
+            response_chunk = ChatResponseChunk(
                 id=response_id,
-                chunk=res,
-                is_last=False,
-                is_response=True,
+                event_type=event.type,
+                task=task,
+                error=event.error,
+                response_chunk=event.response_chunk,
+                sources=[
+                    ChatAgentSources(score=source.score, text=source.text, metadata=source.metadata)
+                    for source in event.sources
+                    if isinstance(source, NodeWithScore)
+                ]
             )
-            yield chunk.json() + '\n'
-        yield ChatResponseChunk(
-            id=response_id,
-            chunk='',
-            is_response=True,
-            is_last=True).json() + '\n'
+            yield response_chunk.json() + '\n'
 
     return StreamingResponse(
         response_generator(),

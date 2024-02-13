@@ -8,12 +8,9 @@ load_dotenv()
 
 
 def create_app():
-    from chat_impl.main import chat_router
+    from pipeline.ingest import ingest_router
 
-    logging.basicConfig(format='%(asctime)s,%(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-                        datefmt='%Y-%m-%d:%H:%M:%S',
-                        level=logging.INFO)
-
+    logging.basicConfig(level=logging.INFO)
     fastapi = FastAPI()
     fastapi.add_middleware(
         CORSMiddleware,
@@ -22,7 +19,7 @@ def create_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    fastapi.include_router(chat_router)
+    fastapi.include_router(ingest_router)
     return fastapi
 
 
