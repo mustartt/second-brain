@@ -9,6 +9,8 @@ functions/venv
 functions/*.iml
 *.iml
 
-services/embedding_service/.env
+services/ingest_service/.env
 services/chat_service/.env
 
+**/.env
+**/*.iml

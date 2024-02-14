@@ -138,6 +138,9 @@ function createChatState() {
                 newMap.set(chat.chatId, chat);
             }
             value.chats = newMap;
+            if (!value.activeChatId) {
+                return value;
+            }
             if (!newMap.has(value.activeChatId)) {
                 value.activeChatId = null;
             }
@@ -244,8 +247,9 @@ function createChatState() {
 
             msg.content += chunk;
             msg.isComplete = isComplete;
-            msg.progressTree.isComplete = isComplete;
-
+            if (msg.progressTree) { // sets the root task completion state
+                msg.progressTree.isComplete = isComplete;
+            }
             return value;
         });
     }
@@ -281,7 +285,9 @@ function createChatState() {
                 children: []
             };
 
-            const node = recursiveFind(msg.progressTree, task.parent_id);
+            const node = msg.progressTree
+                ? recursiveFind(msg.progressTree, task.parent_id)
+                : null;
             if (!node) {
                 console.warn('unable to find parent id for', task);
                 return value;
@@ -305,6 +311,19 @@ function createChatState() {
         });
     }
 
+    function appendChatContext(chatId: string, messageId: string, sources: ContextSource[]) {
+        update(value => {
+            const chat = value.chats.get(chatId);
+            if (!chat || !chat.messages) return value;
+            const idx = chat.messages.history.findLastIndex(msg => msg.msgId === messageId);
+            if (idx === -1) return value;
+            const msg = chat.messages.history[idx];
+
+            msg.context = sources;
+            return value;
+        });
+    }
+
     return {
         subscribe, set, update,
         createNewChat, renameChat, deleteChat,
@@ -314,7 +333,8 @@ function createChatState() {
         setChatIsLoading, setChatIsBlocked, setChatIsSaving,
         insertChatMessage, removeErrorMessages,
         appendChatMessageResponse,
-        appendChatError, appendAgentTask
+        appendChatError, appendAgentTask,
+        appendChatContext
     };
 }
 

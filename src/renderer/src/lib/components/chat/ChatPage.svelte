@@ -9,9 +9,11 @@
     import {onDestroy} from "svelte";
     import ChatArea from "$lib/components/chat/ChatArea.svelte";
     import {activeChatState, type Chat} from "$lib/store/chat-store";
+    import ContextPanel from "$lib/components/chat/ContextPanel.svelte";
+    import {CogIcon, PanelRightClose, PanelRightCloseIcon, PanelRightOpenIcon} from "lucide-svelte";
 
     let isSettingsOpen = false;
-    let showContext = true;
+    let showContext = false;
     let activeChat: Chat | null;
 
     const unsubState = activeChatState.subscribe(value => (activeChat = value));
@@ -37,10 +39,22 @@
 
 <Splitpanes on:splitter-click={handleSplitterClick}
             on:pane-maximize={handlePaneMaximize}>
-    <Pane minSize={50} size={75} maxSize={100}>
+    <Pane minSize={55} maxSize={100}>
         <div class="flex flex-col py-2 px-4 h-screen">
-            <div class="flex-0 flex flex-row pt-4 pb-4">
+            <div class="flex-0 flex flex-row justify-between items-center pt-4 pb-4">
                 <h1 class="font-bold text-3xl tracking-tight">Chat Assistant</h1>
+                <div class="flex items-center">
+                    <Button variant="ghost" on:click={() => (isSettingsOpen = !isSettingsOpen)}>
+                        <CogIcon class="w-5 h-5"/>
+                    </Button>
+                    <Button variant="ghost" on:click={() => (showContext = !showContext)}>
+                        {#if showContext}
+                            <PanelRightCloseIcon class="w-5 h-5"/>
+                        {:else}
+                            <PanelRightOpenIcon class="w-5 h-5"/>
+                        {/if}
+                    </Button>
+                </div>
             </div>
             <div class="flex-1 flex flex-row overflow-x-hidden">
                 <ChatHistory/>
@@ -51,31 +65,8 @@
         </div>
     </Pane>
     {#if showContext}
-        <Pane minSize={25} size={25}>
-            <div class="flex h-full flex-col justify-center items-center">
-                <h1 class="text-2xl font-bold">Context</h1>
-            </div>
+        <Pane minSize={25} size={30}>
+            <ContextPanel/>
         </Pane>
     {/if}
 </Splitpanes>
-
-<!--<div class="flex flex-col py-2 px-4 h-screen">-->
-<!--    <div class="flex-0 flex flex-row pt-4 pb-4">-->
-<!--        <h1 class="font-bold text-3xl tracking-tight">Chat Assistant</h1>-->
-<!--    </div>-->
-<!--    <div class="flex-1 flex flex-row overflow-x-hidden">-->
-<!--        <ChatHistory/>-->
-<!--        <div class="flex flex-grow">-->
-<!--            <Splitpanes>-->
-<!--                <Pane minSize={40} size={65}>-->
-<!--                    <ChatArea bind:isSettingsOpen={isSettingsOpen} activeChat={activeChat}/>-->
-<!--                </Pane>-->
-<!--                <Pane minSize={25} size={35}>-->
-<!--                    <div class="flex h-full flex-col justify-center items-center">-->
-<!--                        <h1 class="text-2xl font-bold">Context</h1>-->
-<!--                    </div>-->
-<!--                </Pane>-->
-<!--            </Splitpanes>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->

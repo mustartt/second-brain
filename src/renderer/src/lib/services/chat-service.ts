@@ -13,11 +13,18 @@ interface ChatSettingsModel {
     maxLength: number;
 }
 
+interface ContextSourceModel {
+    type: string,
+    score: number,
+    content: string;
+    metadata: { [key: string]: string }
+}
+
 interface ChatMessageModel {
     msgId: string;
     role: string;
     content: string;
-    context: ContextSource[];
+    context: ContextSourceModel[];
     timestamp: Timestamp;
 }
 
@@ -39,7 +46,14 @@ export async function loadChats() {
     try {
         chatState.setChatsIsLoading(true);
 
-        const uid = get(authState).user.userID;
+        const uid = get(authState).user?.userID;
+        if (!uid) {
+            chatState.setChatsIsLoading(false);
+            console.error('Invalid user state when loading chats');
+            toast.error('Error loading chats');
+            return;
+        }
+
         const chatsQuery = query(
             collection(firestore, 'chats'),
             where('userId', '==', uid)
@@ -72,7 +86,12 @@ export async function loadChats() {
 
 export async function saveChat(chat: Chat) {
     try {
-        const uid = get(authState).user.userID;
+        const uid = get(authState).user?.userID;
+        if (!uid) {
+            console.error('Invalid user state when saving chat');
+            toast.error('Error saving chats');
+            return;
+        }
         const chatRef = doc(collection(firestore, 'chats'), chat.chatId);
         const chatModel: ChatModel = {
             userId: uid,
@@ -92,7 +111,12 @@ export async function saveChat(chat: Chat) {
 export async function deleteChat(id: string) {
     chatState.deleteChat(id);
     try {
-        const uid = get(authState).user.userID;
+        const uid = get(authState).user?.userID;
+        if (!uid) {
+            console.error('Invalid user state when deleting chat');
+            toast.error('Error deleting chats');
+            return;
+        }
         const histRef = doc(collection(firestore, 'chat-history'), id);
         const chatRef = doc(collection(firestore, 'chats'), id);
 
@@ -123,7 +147,13 @@ export async function loadChatHistory(id: string) {
                     progressTree: null,
                     timestamp: msg.timestamp.toDate(),
                     isComplete: true,
-                    error: null
+                    error: null,
+                    context: msg.context.map(context => ({
+                        type: context.type as 'document_text',
+                        score: context.score,
+                        content: context.content,
+                        metadata: new Map(Object.entries(context.metadata))
+                    }))
                 }))
             : [];
         chatState.loadChat({
@@ -149,7 +179,13 @@ export async function saveChatHistory(id: string) {
         const history = get(chatState).chats.get(id)?.messages;
         if (!history) return;
 
-        const uid = get(authState).user.userID;
+        const uid = get(authState).user?.userID;
+        if (!uid) {
+            console.error('Invalid user state when saving chat history');
+            toast.error('Error saving chat history');
+            return;
+        }
+        console.log('saving chat history', id);
         const histRef = doc(collection(firestore, 'chat-history'), id);
         const historyModel: ChatHistoryModel = {
             userId: uid,
@@ -159,7 +195,15 @@ export async function saveChatHistory(id: string) {
                     msgId: msg.msgId,
                     role: msg.role,
                     content: msg.content,
-                    context: msg.context,
+                    context: msg.context.map(ctx => {
+                        const result: ContextSourceModel = {
+                            type: ctx.type,
+                            content: ctx.content,
+                            score: ctx.score,
+                            metadata: Object.fromEntries(ctx.metadata.entries())
+                        };
+                        return result;
+                    }),
                     timestamp: Timestamp.fromDate(msg.timestamp)
                 }))
         };
@@ -173,8 +217,6 @@ export async function saveChatHistory(id: string) {
 export async function createNewChat() {
     const newChat = chatState.createNewChat();
     await switchToActiveChat(newChat.chatId);
-
-    const uid = get(authState).user.userID;
     await saveChat(newChat);
 }
 
@@ -186,7 +228,9 @@ export async function switchToActiveChat(id: string) {
     chatState.setChatIsLoading(id, true);
     loadChatHistory(id);
     chatState.setChatAsActive(id);
-    await unloadChatHistory(oldID);
+    if (oldID) {
+        await unloadChatHistory(oldID);
+    }
 }
 
 export interface ChatAgentTask {
@@ -200,7 +244,7 @@ export interface ChatAgentTask {
 interface ChatAgentSources {
     score: number | null;
     text: string;
-    metadata: { [key: string]: any };
+    metadata: { [key: string]: string };
 }
 
 type AgentResponseType =
@@ -224,8 +268,14 @@ interface ChatResponseChunk {
 }
 
 export async function* generateResponse(message: string, chat: Chat) {
-    // const chatApiUrl = 'https://chat-service-uhefmk7o7q-uc.a.run.app/api/v1/chat';
-    const chatApiUrl = 'http://localhost:8000/api/v1/chat';
+    const chatApiUrl = 'https://chat-service-uhefmk7o7q-uc.a.run.app/api/v1/chat';
+    // const chatApiUrl = 'http://localhost:8000/api/v1/chat';
+
+    if (!chat.messages) {
+        console.error('Invalid message state when generating response');
+        toast.error('Error occurred when getting an response');
+        return;
+    }
 
     const messages = chat.messages.history.slice(0, -1); // removes the last user message
     const requestBody = JSON.stringify({
@@ -242,13 +292,17 @@ export async function* generateResponse(message: string, chat: Chat) {
         message: message,
     });
 
-    console.log(requestBody);
+    const idToken = await firebaseAuth.currentUser?.getIdToken();
+    if (!idToken) {
+        console.error('Cannot get ID Token when generating response');
+        toast.error('Error occurred when getting an response');
+    }
 
     const response = await fetch(chatApiUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${await firebaseAuth.currentUser.getIdToken()}`,
+            'Authorization': `Bearer ${idToken}`,
         },
         body: requestBody,
     });
@@ -264,7 +318,7 @@ export async function* generateResponse(message: string, chat: Chat) {
             const chunk = decoder.decode(value, {stream: true});
             buffer += chunk;
             let lines = buffer.split('\n');
-            buffer = lines.pop();
+            buffer = lines.pop() || '';
 
             for (const line of lines) {
                 if (line) {
@@ -293,6 +347,7 @@ export async function sendUserMessage(chatId: string, content: string) {
     chatState.insertChatMessage(chatId, newChatMessage);
 
     const currentChatState = get(chatState);
+    if (!currentChatState.activeChatId) return;
     const activeChat = currentChatState.chats.get(currentChatState.activeChatId);
     if (!activeChat) return;
 
@@ -316,26 +371,20 @@ export async function sendUserMessage(chatId: string, content: string) {
     };
 
     chatState.insertChatMessage(chatId, responseMessage);
-    // chatState.appendChatMessageResponse(
-    //     chatId,
-    //     responseMessageId,
-    //     'some incomplete text',
-    //     false
-    // );
-    // chatState.appendChatError(chatId,
-    //     responseMessageId,
-    //     'Some Error Message'
-    // );
 
     try {
         for await (const chunk of generateResponse(content, activeChat)) {
             switch (chunk.event_type) {
                 case "agent_event_start": {
-                    chatState.appendAgentTask(chatId, responseMessageId, chunk.task);
+                    if (chunk.task) {
+                        chatState.appendAgentTask(chatId, responseMessageId, chunk.task);
+                    }
                     break;
                 }
                 case "agent_event_stop": {
-                    chatState.appendAgentTask(chatId, responseMessageId, chunk.task);
+                    if (chunk.task) {
+                        chatState.appendAgentTask(chatId, responseMessageId, chunk.task);
+                    }
                     break;
                 }
                 case "response_start": {
@@ -345,6 +394,16 @@ export async function sendUserMessage(chatId: string, content: string) {
                         chunk.response_chunk,
                         false
                     );
+                    const sources: ContextSource[] = chunk.sources.map(source => {
+                        const context: ContextSource = {
+                            type: 'document_text' as const,
+                            score: source.score === null ? 0 : source.score,
+                            content: source.text,
+                            metadata: new Map(Object.entries(source.metadata))
+                        };
+                        return context;
+                    });
+                    chatState.appendChatContext(chatId, responseMessageId, sources);
                     break;
                 }
                 case "response_stream": {
@@ -381,8 +440,8 @@ export async function sendUserMessage(chatId: string, content: string) {
     } catch (err) {
         console.error(err);
         toast.error('Unexpected error when getting a response');
-        const errorString = '\n\n Unexpected Error: ' + err.message;
-        chatState.appendChatError(chatId, responseMessageId, errorString);
+        chatState.appendChatError(chatId, responseMessageId,
+            'Unexpected error when getting a response. Please try again.');
     } finally {
         chatState.setChatIsBlocked(chatId, false);
     }

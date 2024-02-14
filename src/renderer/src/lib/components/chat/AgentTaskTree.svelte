@@ -2,7 +2,7 @@
     import type {AgentTask} from "$lib/store/chat-store";
     import AgentTaskTreeItem from "$lib/components/chat/AgentTaskTreeItem.svelte";
 
-    export let tree: AgentTask;
+    export let tree: AgentTask | null;
 </script>
 
 {#if tree !== null}
