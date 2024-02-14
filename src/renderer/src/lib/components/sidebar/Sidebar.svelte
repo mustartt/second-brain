@@ -6,7 +6,7 @@
         FileStackIcon,
         GlobeIcon,
         HomeIcon,
-        MessageSquareTextIcon, PanelLeftIcon,
+        MessageSquareTextIcon, PanelLeftIcon, PanelLeftOpenIcon,
         SettingsIcon,
         UploadCloudIcon
     } from "lucide-svelte";
@@ -70,20 +70,6 @@
         <Header displayWide={isExpanded}/>
         <Separator/>
         <nav class="flex flex-col space-y-0">
-            <Tooltip.Root openDelay={100} closeDelay={75}>
-                <Tooltip.Trigger asChild let:builder>
-                    <SidebarNavButton item={{
-                      title: '',
-                      layout: 'home',
-                      icon: PanelLeftIcon,
-                      handler: () => appState.toggleSidebar()
-                    }} builder={builder} displayWide={isExpanded} isActive={isExpanded}/>
-                </Tooltip.Trigger>
-                <Tooltip.Content side="right">
-                    Toggle Sidebar
-                </Tooltip.Content>
-            </Tooltip.Root>
-            <Separator/>
             {#each sidebarItems as item}
                 <Tooltip.Root openDelay={100} closeDelay={75}>
                     <Tooltip.Trigger asChild let:builder>
@@ -102,6 +88,23 @@
         </nav>
     </div>
     <div>
+        <Tooltip.Root openDelay={100} closeDelay={75}>
+            <Tooltip.Trigger asChild let:builder>
+                <SidebarNavButton
+                    item={{
+                      title: '',
+                      layout: 'home',
+                      icon: PanelLeftOpenIcon,
+                      handler: () => appState.toggleSidebar()
+                    }}
+                    builder={builder}
+                    displayWide={isExpanded}
+                    isActive={isExpanded}/>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="right">
+                Toggle Sidebar
+            </Tooltip.Content>
+        </Tooltip.Root>
         <Separator/>
         <SidebarFooter displayWide={isExpanded}/>
     </div>

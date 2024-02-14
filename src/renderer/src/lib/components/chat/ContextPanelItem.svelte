@@ -24,7 +24,7 @@
     </Card.Header>
     <Card.Content>
         {#each item.content.split('\n') as line}
-            <p class="text-sm">{line}</p>
+            <p class="text-sm overflow-x-hidden text-ellipsis">{line}</p>
         {/each}
     </Card.Content>
 </Card.Root>
