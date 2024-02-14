@@ -3,26 +3,31 @@
     import * as ContextMenu from '$lib/components/ui/context-menu';
     import {toast} from "svelte-sonner";
     import {DownloadIcon, PencilLineIcon, Trash2Icon} from "lucide-svelte";
-    import {deleteChatHistory} from "$lib/services/chat-service";
     import {appState} from "$lib/store/appstore";
+    import {deleteChat, switchToActiveChat} from "$lib/services/chat-service";
+    import {cn} from "$lib/utils";
 
     export let id: string;
     export let name: string;
+    export let isActive: boolean = false;
 
     function deleteHandler() {
-        deleteChatHistory(id);
+        deleteChat(id);
     }
 
     function openHistoryHandler() {
-        appState.setActiveChat(id);
+        switchToActiveChat(id);
     }
 </script>
 
 <ContextMenu.Root>
     <ContextMenu.Trigger>
-        <Button variant="ghost" class="h-8 px-2 relative justify-start font-normal w-full"
+        <Button variant="ghost"
+                class={cn("h-8 px-2 relative justify-start font-normal w-full", isActive ? 'underline' : '')}
                 on:click={openHistoryHandler}>
-            <span class="text-ellipsis overflow-hidden">{name}</span>
+            <span class={cn('text-ellipsis overflow-hidden', isActive ? 'text-foreground' : 'text-muted-foreground')}>
+                {name}
+            </span>
         </Button>
     </ContextMenu.Trigger>
     <ContextMenu.Content>
