@@ -23,7 +23,7 @@
         if (!activeChat) {
             await createNewChat();
         }
-        await sendUserMessage(activeChat.chatId, newChatValue);
+        await sendUserMessage(activeChat!.chatId, newChatValue);
         saveChatStateDebounce();
     }
 

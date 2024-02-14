@@ -34,12 +34,15 @@ export function createFileUpload(file: File) {
 
     defaultUploadPool.submit(async () => {
         const storageRef = ref(storage, 'files/' + handle);
+        const uid = firebaseAuth.currentUser?.uid;
+        if (!uid) return;
+
         const metadata: UploadMetadata = {
             contentType: file.type,
             customMetadata: {
                 filename: file.name,
                 path: file.path,
-                userId: firebaseAuth.currentUser.uid
+                userId: uid
             }
         };
         const task = uploadBytesResumable(storageRef, entry.fileHandle, metadata);
@@ -109,8 +112,7 @@ export function cancelFileUpload(id: string) {
     const state = get(fileQueueState);
     const entry = state.get(id);
     if (entry === undefined) return;
-
-    entry.uploadHandle.cancel();
+    entry.uploadHandle?.cancel();
 }
 
 export function pauseFileUpload(id: string) {
@@ -118,15 +120,14 @@ export function pauseFileUpload(id: string) {
     const entry = state.get(id);
     if (entry === undefined) return;
 
-    entry.uploadHandle.pause();
+    entry.uploadHandle?.pause();
 }
 
 export function resumeFileUpload(id: string) {
     const state = get(fileQueueState);
     const entry = state.get(id);
     if (entry === undefined) return;
-
-    entry.uploadHandle.resume();
+    entry.uploadHandle?.resume();
 }
 
 export function deleteFileUpload(id: string) {

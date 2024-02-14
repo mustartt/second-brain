@@ -25,6 +25,9 @@ export function logout() {
 }
 
 export async function getAuthToken() {
+    if (!firebaseAuth.currentUser) {
+        throw Error("getAuthToken: current user does not exists");
+    }
     return await getIdToken(firebaseAuth.currentUser);
 }
 
