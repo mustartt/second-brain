@@ -1,3 +1,4 @@
+import logging
 import time
 from dataclasses import dataclass
 from asyncio import Queue
@@ -46,7 +47,7 @@ class RealTimeAgentEvents(BaseCallbackHandler):
         if not allowed_events:
             allowed_events = [CBEventType.QUERY, CBEventType.SUB_QUESTION, CBEventType.FUNCTION_CALL]
         allowed = self.get_allowed_events(allowed_events)
-        super().__init__(allowed, allowed)
+        super().__init__([], [])
         self.event_queue = event_queue
         self.event_start_time = {}
 

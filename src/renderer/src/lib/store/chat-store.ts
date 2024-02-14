@@ -1,5 +1,6 @@
 import {derived, type Writable, writable} from "svelte/store";
 import {v4 as uuidv4} from "uuid";
+import type {ChatAgentTask} from "$lib/services/chat-service";
 
 interface ChatSettings {
     model: string;
@@ -19,6 +20,7 @@ export type ContextSource = DocumentTextContext;
 
 export interface AgentTask {
     id: string;
+    parentId: string;
     type: string;
     isComplete: boolean;
     duration: number;
@@ -242,6 +244,8 @@ function createChatState() {
 
             msg.content += chunk;
             msg.isComplete = isComplete;
+            msg.progressTree.isComplete = isComplete;
+
             return value;
         });
     }
@@ -260,7 +264,7 @@ function createChatState() {
         });
     }
 
-    function appendAgentTask(chatId: string, messageId: string, task: AgentTask) {
+    function appendAgentTask(chatId: string, messageId: string, task: ChatAgentTask) {
         update(value => {
             const chat = value.chats.get(chatId);
             if (!chat || !chat.messages) return value;
@@ -268,7 +272,34 @@ function createChatState() {
             if (idx === -1) return value;
             const msg = chat.messages.history[idx];
 
+            const newTaskObject = {
+                type: task.event_type,
+                id: task.event_id,
+                parentId: task.parent_id,
+                isComplete: task.completed,
+                duration: task.duration_s,
+                children: []
+            };
 
+            const node = recursiveFind(msg.progressTree, task.parent_id);
+            if (!node) {
+                console.warn('unable to find parent id for', task);
+                return value;
+            }
+
+            if (!task.completed) {
+                node.children.push(newTaskObject);
+            } else {
+                const idx = node.children.findIndex(t => t.id === task.event_id);
+                if (idx === -1) {
+                    console.warn('unable to find event id in children for', task);
+                    node.children.push(newTaskObject);
+                } else {
+                    const updateNode = node.children[idx];
+                    updateNode.isComplete = task.completed;
+                    updateNode.duration = task.duration_s;
+                }
+            }
 
             return value;
         });
@@ -283,8 +314,21 @@ function createChatState() {
         setChatIsLoading, setChatIsBlocked, setChatIsSaving,
         insertChatMessage, removeErrorMessages,
         appendChatMessageResponse,
-        appendChatError
+        appendChatError, appendAgentTask
     };
+}
+
+function recursiveFind(node: AgentTask, id: string): AgentTask | null {
+    if (node.id === id) {
+        return node;
+    }
+    for (const child of node.children) {
+        const result = recursiveFind(child, id);
+        if (result) {
+            return result;
+        }
+    }
+    return null;
 }
 
 export const chatState = createChatState();

@@ -1,9 +1,8 @@
 <script lang="ts">
     import type {AgentTask} from "$lib/store/chat-store";
-    import {CheckCircle2, CheckCircle2Icon, Loader2Icon} from "lucide-svelte";
+    import {CheckCircle2Icon, Loader2Icon} from "lucide-svelte";
 
     export let node: AgentTask;
-    export let nodeDepth: number = 0;
 </script>
 
 <div class="flex flex-col">
@@ -14,9 +13,11 @@
             {:else}
                 <CheckCircle2Icon class="text-foreground w-4 h-4"/>
             {/if}
-            <span class="text-muted-foreground ml-1 -mt-[2px] text-sm">task: {node.id}</span>
+            <span class="text-muted-foreground ml-1 -mt-[2px] text-sm">
+                task: {node.type} <span class="text-xs text-zinc-600">{node.id}</span>
+            </span>
         </span>
-        {#if node.isComplete}
+        {#if node.isComplete && node.duration !== 0}
             <span class="text-muted-foreground text-sm">{node.duration.toFixed(2)}s</span>
         {/if}
     </div>

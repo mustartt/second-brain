@@ -189,7 +189,7 @@ export async function switchToActiveChat(id: string) {
     await unloadChatHistory(oldID);
 }
 
-interface ChatAgentTask {
+export interface ChatAgentTask {
     completed: boolean;
     event_type: string;
     event_id: string;
@@ -224,8 +224,8 @@ interface ChatResponseChunk {
 }
 
 export async function* generateResponse(message: string, chat: Chat) {
-    const chatApiUrl = 'https://chat-service-uhefmk7o7q-uc.a.run.app/api/v1/chat';
-    // const chatApiUrl = 'http://localhost:8000/api/v1/chat';
+    // const chatApiUrl = 'https://chat-service-uhefmk7o7q-uc.a.run.app/api/v1/chat';
+    const chatApiUrl = 'http://localhost:8000/api/v1/chat';
 
     const messages = chat.messages.history.slice(0, -1); // removes the last user message
     const requestBody = JSON.stringify({
@@ -302,7 +302,14 @@ export async function sendUserMessage(chatId: string, content: string) {
         role: 'assistant',
         content: '',
         context: [],
-        progressTree: null,
+        progressTree: {
+            id: 'root',
+            type: 'root',
+            parentId: 'none',
+            isComplete: false,
+            duration: 0,
+            children: []
+        },
         timestamp: new Date(),
         isComplete: false,
         error: null
@@ -322,18 +329,13 @@ export async function sendUserMessage(chatId: string, content: string) {
 
     try {
         for await (const chunk of generateResponse(content, activeChat)) {
-            console.log(chunk);
             switch (chunk.event_type) {
-                case "agent_start":
-                    break;
-                case "agent_complete":
-                    break;
-                case "agent_error":
-                    break;
                 case "agent_event_start": {
+                    chatState.appendAgentTask(chatId, responseMessageId, chunk.task);
                     break;
                 }
                 case "agent_event_stop": {
+                    chatState.appendAgentTask(chatId, responseMessageId, chunk.task);
                     break;
                 }
                 case "response_start": {
@@ -370,6 +372,9 @@ export async function sendUserMessage(chatId: string, content: string) {
                         chunk.error || 'Unknown Error'
                     );
                     break;
+                }
+                default: {
+                    console.warn('unhandled response event', chunk);
                 }
             }
         }

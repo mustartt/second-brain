@@ -2,11 +2,11 @@
     import type {AgentTask} from "$lib/store/chat-store";
     import AgentTaskTreeItem from "$lib/components/chat/AgentTaskTreeItem.svelte";
 
-    export let tree: AgentTask | null;
+    export let tree: AgentTask;
 </script>
 
 {#if tree !== null}
-    <div class="flex flex-col max-w-96">
+    <div class="flex flex-col pr-24">
         <AgentTaskTreeItem node={tree}/>
     </div>
 {/if}

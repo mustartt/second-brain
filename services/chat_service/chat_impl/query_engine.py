@@ -5,7 +5,7 @@ from typing import List
 
 from llama_index import StorageContext, ServiceContext, VectorStoreIndex
 from llama_index.agent import OpenAIAgent
-from llama_index.callbacks import CallbackManager
+from llama_index.callbacks import CallbackManager, CBEventType
 from llama_index.core.llms.types import ChatMessage
 from llama_index.indices.vector_store import VectorIndexRetriever
 from llama_index.llms import OpenAI
@@ -27,7 +27,12 @@ class ContextFactory:
         return StorageContext.from_defaults(vector_store=self.ctx.document_vector_store)
 
     def get_service_context(self, queue: Queue):
-        event_handler = RealTimeAgentEvents(queue)
+        event_handler = RealTimeAgentEvents(queue, [
+            CBEventType.LLM, CBEventType.QUERY, CBEventType.RETRIEVE,
+            CBEventType.SYNTHESIZE, CBEventType.TREE, CBEventType.SUB_QUESTION,
+            CBEventType.FUNCTION_CALL, CBEventType.RERANKING, CBEventType.EXCEPTION,
+            CBEventType.AGENT_STEP
+        ])
         callback_manager = CallbackManager([event_handler])
 
         return ServiceContext.from_defaults(
@@ -126,6 +131,7 @@ class QueryEngineFactory:
             similarity_top_k=10,
             filters=filters,
         )
+        response_llm.callback_manager = service_context.callback_manager
         query_engine = CitationQueryEngine.from_args(
             index=index,  # this is not used
             retriever=retriever,
@@ -144,7 +150,11 @@ class QueryEngineFactory:
                 query_engine=query_engine,
                 metadata=ToolMetadata(
                     name="document_vector_index",
-                    description="Contains semantic information about all my files",
+                    description=(
+                        "Contains semantic information about all my files. "
+                        "When using the output, return the citation in [number] "
+                        "as is and do not modify or generate new ones."
+                    ),
                 ),
             ),
         ]
