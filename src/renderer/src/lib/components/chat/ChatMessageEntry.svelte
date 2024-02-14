@@ -25,7 +25,7 @@
     }
 </script>
 
-<div class="flex flex-col">
+<div class="flex flex-col container max-w-4xl mx-auto">
     <div class="flex flex-row justify-between">
         <Avatar.Root class="w-8 h-8 border-2">
             <Avatar.Image

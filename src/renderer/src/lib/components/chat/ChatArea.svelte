@@ -52,7 +52,7 @@
 </script>
 
 <div class="flex w-full h-full flex-col justify-between">
-    <div class="flex flex-col h-full container max-w-4xl mx-auto">
+    <div class="flex flex-col h-full">
         <div class="flex flex-grow overflow-y-auto">
             {#if isLoading}
                 <div class="flex w-full justify-center items-center">
