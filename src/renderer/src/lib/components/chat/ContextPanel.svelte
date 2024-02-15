@@ -6,7 +6,9 @@
     import {LibraryIcon} from "lucide-svelte";
 
     let items: ContextSource[];
-    const unsub = contextState.subscribe(value => (items = value));
+    const unsub = contextState.subscribe(value => {
+        items = value.sources;
+    });
     onDestroy(unsub);
 </script>
 

@@ -11,13 +11,18 @@
     import {activeChatState, type Chat} from "$lib/store/chat-store";
     import ContextPanel from "$lib/components/chat/ContextPanel.svelte";
     import {CogIcon, PanelRightClose, PanelRightCloseIcon, PanelRightOpenIcon} from "lucide-svelte";
+    import {contextState} from "$lib/store/context-store";
 
     let isSettingsOpen = false;
-    let showContext = false;
     let activeChat: Chat | null;
+    let showContext: boolean;
 
     const unsubState = activeChatState.subscribe(value => (activeChat = value));
-    onDestroy(unsubState);
+    const unsubContext = contextState.subscribe(value => (showContext = value.isOpen));
+    onDestroy(() => {
+        unsubState();
+        unsubContext();
+    });
 
     function handleSplitterClick() {
     }
@@ -47,7 +52,7 @@
                     <Button variant="ghost" on:click={() => (isSettingsOpen = !isSettingsOpen)}>
                         <CogIcon class="w-5 h-5"/>
                     </Button>
-                    <Button variant="ghost" on:click={() => (showContext = !showContext)}>
+                    <Button variant="ghost" on:click={() => contextState.toggleShowContext(!showContext)}>
                         {#if showContext}
                             <PanelRightCloseIcon class="w-5 h-5"/>
                         {:else}
