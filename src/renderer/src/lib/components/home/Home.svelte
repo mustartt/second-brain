@@ -1,9 +1,14 @@
 <script>
     import {Button} from '$lib/components/ui/button';
-    import axios from 'axios';
+    import {createNewCollection, createNewDirectory} from '$lib/services/file-service';
 
     async function test() {
+        // const result = await createNewCollection('New Collection');
+        // console.log(result);
 
+        const uid = 'P9raM7Cu88SWRSMMM39ztANMZEN2';
+        const colId = '911d862b-8509-4604-bcb1-20c7f14d4c19';
+        await createNewDirectory(uid, colId, '/test dir/SomeOtherDirectory/sampleadjlai/dne/123');
     }
 </script>
 
