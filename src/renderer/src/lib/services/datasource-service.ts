@@ -10,6 +10,7 @@ import {
 } from "$lib/services/file-service";
 import {get} from "svelte/store";
 import {onSnapshot} from 'firebase/firestore';
+import {registerDirectoryChanges} from "$lib/services/file-viewer-service";
 
 export async function loadDataSources() {
     try {
@@ -54,16 +55,7 @@ export async function loadNewDataSource(source: DataSource) {
         // new viewer state
         const cursor = await getCollectionCursor(source.owner, source.id);
         const iter = await cursor.getDirectoryIterator();
-        const unsub = onSnapshot(iter.getCurrentQuery(), snapshot => {
-            const newEntries = snapshot.docs.map(doc =>
-                doc.data() as FileEntry | DirectoryPage);
-            fileViewerState.update(value => {
-                if (value) {
-                    value.entries = newEntries;
-                }
-                return value;
-            });
-        });
+        const unsub = registerDirectoryChanges(iter.getCurrentQuery());
         const loadedViewState: FileViewerState = {
             datasource: source,
             cursor: cursor,

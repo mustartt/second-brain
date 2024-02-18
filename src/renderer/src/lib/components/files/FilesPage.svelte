@@ -10,13 +10,14 @@
         ArrowDownWideNarrow, ArrowUpWideNarrow,
         ChevronRightIcon,
         FolderIcon,
-        FolderOpenIcon,
+        FolderOpenIcon, FolderPlusIcon,
         LayoutGrid,
         LayoutGridIcon,
-        ListTree, Loader2Icon
+        ListTree, Loader2Icon, UploadIcon
     } from "lucide-svelte";
     import * as Tabs from "$lib/components/ui/tabs";
     import * as Select from "$lib/components/ui/select";
+    import * as ContextMenu from "$lib/components/ui/context-menu";
     import FolderGridItem from "$lib/components/files/file-icon/FolderGridItem.svelte";
     import {Separator} from "$lib/components/ui/separator";
     import {Button} from "$lib/components/ui/button";
@@ -24,44 +25,6 @@
     import FilePathViewer from "$lib/components/files/file-path-viewer/FilePathViewer.svelte";
     import FileGridItem from "$lib/components/files/file-icon/FileGridItem.svelte";
 
-    const list = [
-        'Desktop',
-        'Downloads',
-        'Documents',
-        'textbook',
-        'adhe unit 4-6 notes.txt',
-        'Chapter 2 - Cell surface structure.txt',
-        'Untitled-2024-02-04-1329.excalidraw',
-        'test1.pdf',
-        'Module 3.1_ Overview, Groups, and Characteristics.pdf',
-        'Desktop',
-        'Downloads',
-        'Documents',
-        'textbook',
-        'adhe unit 4-6 notes.txt',
-        'Chapter 2 - Cell surface structure.txt',
-        'Untitled-2024-02-04-1329.excalidraw',
-        'test1.pdf',
-        'Module 3.1_ Overview, Groups, and Characteristics.pdf',
-        'textbook',
-        'adhe unit 4-6 notes.txt',
-        'Chapter 2 - Cell surface structure.txt',
-        'Untitled-2024-02-04-1329.excalidraw',
-        'test1.pdf',
-        'Module 3.1_ Overview, Groups, and Characteristics.pdf',
-        'textbook',
-        'adhe unit 4-6 notes.txt',
-        'Chapter 2 - Cell surface structure.txt',
-        'Untitled-2024-02-04-1329.excalidraw',
-        'test1.pdf',
-        'Module 3.1_ Overview, Groups, and Characteristics.pdf',
-        'textbook',
-        'adhe unit 4-6 notes.txt',
-        'Chapter 2 - Cell surface structure.txt',
-        'Untitled-2024-02-04-1329.excalidraw',
-        'test1.pdf',
-        'Module 3.1_ Overview, Groups, and Characteristics.pdf'
-    ];
 
     let viewerState: FileViewerState | null;
     const unsub = fileViewerState.subscribe(value => {
@@ -115,27 +78,45 @@
                         </Tabs.List>
                     </div>
                 </div>
-                <div class="w-full h-full mt-2 rounded p-4 overflow-y-auto">
-                    <Tabs.Content value="grid">
+
+                <div class="flex w-full h-full mt-2 rounded p-4 overflow-y-auto">
+                    <Tabs.Content value="grid" class="flex">
                         {#if viewerState.isLoading}
-                            <div class="flex w-full mt-32 justify-center items-center">
+                            <div class="w-full mt-32 justify-center items-center">
                                 <Loader2Icon class="w-5 h-5 animate-spin mr-2"/>
                                 <span class="text-muted-foreground">Loading Files...</span>
                             </div>
-                        {:else if viewerState.entries.length === 0}
-                            <div class="flex w-full mt-32 justify-center items-center">
-                                <span class="text-muted-foreground">No Items</span>
-                            </div>
                         {:else}
-                            <div class="grid grid-cols-8 2xl:grid-cols-10 container gap-4">
-                                {#each viewerState.entries as item}
-                                    {#if item.type === 'dir'}
-                                        <FolderGridItem name={item.name}/>
+                            <ContextMenu.Root>
+                                <ContextMenu.Trigger>
+                                    {#if viewerState.entries.length === 0}
+                                        <div class="flex w-full mt-32 justify-center items-center">
+                                            <span class="text-muted-foreground">No Items</span>
+                                        </div>
                                     {:else}
-                                        <FileGridItem name={item.name}/>
+                                        <div class="grid grid-cols-8 2xl:grid-cols-10 container gap-4">
+                                            {#each viewerState.entries as item}
+                                                {#if item.type === 'dir'}
+                                                    <FolderGridItem name={item.name}/>
+                                                {:else}
+                                                    <FileGridItem name={item.name}/>
+                                                {/if}
+                                            {/each}
+                                        </div>
                                     {/if}
-                                {/each}
-                            </div>
+                                    <ContextMenu.Content class="w-52">
+                                        <ContextMenu.Item on:click={() => toast.info('not implemented')}>
+                                            <FolderPlusIcon class="w-5 h-5 text-muted-foreground mr-2"/>
+                                            New Folder
+                                        </ContextMenu.Item>
+                                        <ContextMenu.Separator/>
+                                        <ContextMenu.Item on:click={() => toast.info('not implemented')}>
+                                            <UploadIcon class="w-5 h-5 text-muted-foreground mr-2"/>
+                                            Upload File
+                                        </ContextMenu.Item>
+                                    </ContextMenu.Content>
+                                </ContextMenu.Trigger>
+                            </ContextMenu.Root>
                         {/if}
                     </Tabs.Content>
                 </div>
