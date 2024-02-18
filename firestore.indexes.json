@@ -1,4 +1,181 @@
 {
-  "indexes": [],
-  "fieldOverrides": []
+    "indexes": [
+        {
+            "collectionGroup": "filesystem",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "owner",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "parent",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "type",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "name",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "filesystem",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "owner",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "parent",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "type",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "name",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "filesystem",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "owner",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "parent",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "type",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "metadata.timeUpdated",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "filesystem",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "owner",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "parent",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "type",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "metadata.timeUpdated",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "filesystem",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "owner",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "parent",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "type",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "metadata.timeCreated",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "filesystem",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "owner",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "parent",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "type",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "metadata.timeCreated",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "filesystem",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "owner",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "parent",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "type",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "metadata.size",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "filesystem",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "owner",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "parent",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "type",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "metadata.size",
+                    "order": "DESCENDING"
+                }
+            ]
+        }
+    ],
+    "fieldOverrides": []
 }

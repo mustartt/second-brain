@@ -11,6 +11,7 @@
     import {onAuthStateChanged} from 'firebase/auth';
     import {toast} from "svelte-sonner";
     import Home from "$lib/components/home/Home.svelte";
+    import FilesPage from "$lib/components/files/FilesPage.svelte";
 
     let activeTab: Layout;
     let hasAuth: boolean;
@@ -21,7 +22,7 @@
         'home': Home,
         'answer': null,
         'chat': ChatPage,
-        'files': null,
+        'files': FilesPage,
         'queue': QueuePage,
         'settings': null,
     };

@@ -1,23 +1,24 @@
 import {
     collection,
     doc,
+    type DocumentReference,
+    getDoc,
+    getDocs,
+    limit,
+    orderBy,
     query,
+    type QuerySnapshot,
+    runTransaction,
+    startAfter,
     Timestamp,
     where,
     writeBatch,
-    orderBy,
-    getDocs,
-    limit,
-    startAfter,
-    runTransaction,
-    type QuerySnapshot,
-    type DocumentReference,
-    getDoc,
 } from "firebase/firestore";
 import {firebaseAuth, firestore} from "$lib/services/firebase-service";
 import {v4 as uuidv4} from 'uuid';
+import 'crypto';
 
-type Collection = DocumentsCollection;
+export type DataSource = DocumentsCollection;
 
 interface DocumentsCollection {
     type: 'document';
@@ -27,13 +28,17 @@ interface DocumentsCollection {
     root: PageId; // references the root page of the fs
 }
 
-type CollectionId = string;
+type DataSourceId = string;
 type PageId = string;
 type UserId = string;
 type FileId = string;
 
+function computeUniqueID(owner: string, parentID: string, name: string) {
+    return window.api.crypto.sha256base64(`${owner}|${parentID}|${name}`);
+}
 
-interface DirectoryPage {
+// Primary Key: SHA256(owner, parentID, name)
+export interface DirectoryPage {
     id: PageId;
     parent: PageId;
     owner: UserId;
@@ -51,7 +56,8 @@ interface DirectoryPage {
     };
 }
 
-interface FileEntry {
+// Primary Key: SHA256(owner, parentID, name)
+export interface FileEntry {
     id: FileId;
     parent: PageId;
     owner: UserId;
@@ -59,7 +65,8 @@ interface FileEntry {
     type: 'file';
     name: string;       // max 256 char
     revision: number;   // monotonic revision id
-    hash: string;
+    hash: string;       // md5 digest
+    fileHandle: string; // actual file handle to the file service
 
     metadata: {
         contentType: string;
@@ -76,14 +83,17 @@ class DirectoryPageIterator {
     private currentSnapshot: QuerySnapshot;
 
     private readonly uid: string;
+    private readonly parent: PageId;
     private readonly pageSize: number;
     private readonly orderByKey: OrderByKey;
     private readonly orderByOrder: OrderByOrder;
 
-    constructor(snapshot: QuerySnapshot, uid: string, pageSize: number,
+
+    constructor(snapshot: QuerySnapshot, uid: string, parent: PageId, pageSize: number,
                 orderByKey: OrderByKey, orderByOrder: OrderByOrder) {
         this.currentSnapshot = snapshot;
         this.uid = uid;
+        this.parent = parent;
         this.pageSize = pageSize;
         this.orderByKey = orderByKey;
         this.orderByOrder = orderByOrder;
@@ -103,6 +113,7 @@ class DirectoryPageIterator {
         const nextQuery = query(
             collection(firestore, 'filesystem'),
             where('owner', '==', this.uid),
+            where('parent', '==', this.parent),
             orderBy('type', 'asc'),
             orderBy(this.orderByKey, this.orderByOrder),
             limit(this.pageSize),
@@ -113,13 +124,14 @@ class DirectoryPageIterator {
     }
 }
 
-class PathCursor {
-    private currentCollection: Collection;
-    private currentPage: DirectoryPage;
-    private currentPath: string;
+export class PathCursor {
+    private readonly currentCollection: DataSource;
     private readonly uid: string;
 
-    constructor(col: Collection, page: DirectoryPage, path: string) {
+    private currentPage: DirectoryPage;
+    private currentPath: string;
+
+    constructor(col: DataSource, page: DirectoryPage, path: string) {
         this.currentCollection = col;
         this.currentPage = page;
         this.currentPath = path;
@@ -138,20 +150,55 @@ class PathCursor {
         return this.currentCollection;
     }
 
-    async getDirectoryIterator(pageSize: number = 100,
+    async getDirectoryIterator(pageSize: number = 25,
                                orderKey: OrderByKey = 'name',
                                order: OrderByOrder = 'asc') {
         const startQuery = query(
             collection(firestore, 'filesystem'),
             where('owner', '==', this.uid),
+            where('parent', '==', this.currentPage.id),
             orderBy('type', 'asc'),
             orderBy(orderKey, order),
             limit(pageSize)
         );
         return new DirectoryPageIterator(
             await getDocs(startQuery),
-            this.uid, pageSize, orderKey, order,
+            this.uid, this.currentPage.id, pageSize, orderKey, order,
         );
+    }
+
+    async push(name: string) {
+        const page = await getDirectoryEntry(this.uid, this.currentPage.id, name);
+        if (!page.exists()) {
+            throw new Error('Directory does not exists ' + name);
+        }
+        const pageData = page.data() as DirectoryPage | FileEntry;
+        if (pageData.type !== 'dir') {
+            throw new Error('Cannot push file onto path ' + name);
+        }
+
+        const sep = this.currentPath === '/' ? '' : '/';
+        this.currentPath += sep + name;
+        this.currentPage = pageData;
+    }
+
+    async pop() {
+        if (this.currentPath === '/') {
+            return false;
+        }
+
+        const docRef = doc(collection(firestore, 'filesystem'), this.currentPage.parent);
+        const docData = await getDoc(docRef);
+        if (!docData.exists()) {
+            throw new Error('Parent document does not exists');
+        }
+        this.currentPage = docData.data() as DirectoryPage;
+
+        let parts = this.currentPath.split('/');
+        parts.shift();
+        parts.pop();
+        this.currentPath = '/' + parts.join('/');
+        return true;
     }
 }
 
@@ -159,7 +206,6 @@ const validNameRegex = /^[\w\-. ]{1,255}$/;
 
 
 export async function createNewCollection(name: string) {
-    const rootPageId = uuidv4();
     const collectionId = uuidv4();
     const uid = firebaseAuth.currentUser?.uid;
     if (!uid) {
@@ -168,6 +214,7 @@ export async function createNewCollection(name: string) {
     if (!validNameRegex.test(name)) {
         throw new Error('Invalid collection name');
     }
+    const rootPageId = computeUniqueID(uid, collectionId, '$root');
     const newCollection: DocumentsCollection = {
         name: name,
         owner: uid,
@@ -179,7 +226,7 @@ export async function createNewCollection(name: string) {
         type: 'dir',
         name: "$root",
         owner: uid,
-        parent: "null",
+        parent: collectionId,
         revision: 0,
         metadata: {
             dirCount: 0, fileCount: 0, size: 0,
@@ -200,17 +247,40 @@ export async function createNewCollection(name: string) {
     return new PathCursor(newCollection, newRootPage, '/');
 }
 
+export async function getAllCollections(uid: string) {
+    const cols = await getDocs(query(
+        collection(firestore, 'datasource'),
+        where('owner', '==', uid),
+    ));
+    return cols.docs.map(col => col.data() as DataSource);
+}
+
+export async function getCollectionCursor(uid: string, collectionId: DataSourceId) {
+    const rootPageId = computeUniqueID(uid, collectionId, '$root');
+    const colRef = doc(collection(firestore, 'datasource'), collectionId);
+    const pageRef = doc(collection(firestore, 'filesystem'), rootPageId);
+
+    const [colResult, pageResult] = await Promise.all([
+        await getDoc(colRef),
+        await getDoc(pageRef)
+    ]);
+
+    if (!colResult.exists() || !pageResult.exists()) {
+        throw new Error('Collection or root page does not exists');
+    }
+
+    return new PathCursor(colResult.data() as DataSource, pageResult.data() as DirectoryPage, '/');
+}
+
 type DirectoryPath = string[];
 
 async function getDirectoryEntry(uid: string, parent: PageId, name: string) {
-    const docQuery = query(
+    const expectedID = computeUniqueID(uid, parent, name);
+    const docRef = doc(
         collection(firestore, 'filesystem'),
-        where('owner', '==', uid),
-        where('parent', '==', parent),
-        where('name', '==', name)
+        expectedID
     );
-    const result = await getDocs(docQuery);
-    return result.docs;
+    return await getDoc(docRef);
 }
 
 async function resolveDirectoryPathToRefs(uid: string, collectionId: string, path: DirectoryPath) {
@@ -218,64 +288,68 @@ async function resolveDirectoryPathToRefs(uid: string, collectionId: string, pat
     if (!targetCollection.exists()) {
         throw new Error('Collection does not exist ' + collectionId);
     }
-    const targetCollectionData = targetCollection.data() as Collection;
+    const targetCollectionData = targetCollection.data() as DataSource;
     let currPageId = targetCollectionData.root;
 
     let visitedRef: DocumentReference[] = [doc(collection(firestore, 'filesystem'), currPageId)];
 
     for (const dir of path) {
         const result = await getDirectoryEntry(uid, currPageId, dir);
-        if (result.length === 0) {
+        if (!result.exists()) {
             throw new Error('Directory does not exists');
         }
-        if (result.length > 1) {
-            throw new Error('Violated invariance duplicate file entry');
-        }
-        const resultData = result[0].data() as DirectoryPage | FileEntry;
+        const resultData = result.data() as DirectoryPage | FileEntry;
         if (resultData.type !== 'dir') {
             throw new Error('Expected directory on path');
         }
-        visitedRef.push(result[0].ref);
+        visitedRef.push(result.ref);
         currPageId = resultData.id;
     }
 
     return visitedRef;
 }
 
-export async function createNewDirectory(uid: string, collectionId: string, path: string) {
+function normalizePath(path: string) {
     const normalizedPath = path.startsWith('/') ? path.substring(1) : path;
     const normalizedPathEnd = normalizedPath.endsWith('/') ? normalizedPath.slice(0, -1) : normalizedPath;
-    const dirs = normalizedPathEnd.split('/');
+    return normalizedPathEnd.split('/');
+}
+
+export async function createNewDirectory(uid: string, collectionId: string, path: string) {
+    const dirs = normalizePath(path);
 
     const invalidDirs = dirs.filter(name => !validNameRegex.test(name));
     if (dirs.length === 0 || invalidDirs.length > 0) {
         throw new Error('Invalid path: ' + path);
     }
 
-    const newDirUUID = uuidv4();
     const newDirName = dirs[dirs.length - 1];
     const parentPaths = dirs.slice(0, -1);
     const ancestors = await resolveDirectoryPathToRefs(uid, collectionId, parentPaths);
 
     await runTransaction(firestore, async (transaction) => {
         // read phase
-        const lastRef = ancestors[ancestors.length - 1];
-        const testNewDirQuery = await getDirectoryEntry(uid, lastRef.id, newDirName);
-        if (testNewDirQuery.length !== 0) {
-            throw new Error('Directory or file already exists ' + newDirName);
-        }
         const needUpdates = await Promise.all(ancestors.map(
             docSnapshot => transaction.get(docSnapshot)
         ));
+        const directParent = needUpdates[needUpdates.length - 1];
+        const parentID = (directParent.data() as DirectoryPage | FileEntry).id;
+
+        const newDirID = computeUniqueID(uid, parentID, newDirName);
+        const newDirRef = await transaction.get(
+            doc(collection(firestore, 'filesystem'), newDirID)
+        );
+        if (newDirRef.exists()) {
+            throw new Error('Directory or file already exists ' + newDirName);
+        }
 
         // write phase
-        const newDirRef = doc(collection(firestore, 'filesystem'), newDirUUID);
         const newDirObject: DirectoryPage = {
-            id: newDirUUID,
+            id: newDirID,
             type: 'dir',
             name: newDirName,
             owner: uid,
-            parent: lastRef.id,
+            parent: directParent.id,
             revision: 0,
             metadata: {
                 dirCount: 0, fileCount: 0, size: 0,
@@ -283,15 +357,81 @@ export async function createNewDirectory(uid: string, collectionId: string, path
                 timeUpdated: Timestamp.now()
             },
         };
-        transaction.set(newDirRef, newDirObject);
+        transaction.set(newDirRef.ref, newDirObject);
         for (const dir of needUpdates) {
             const oldRevision = (dir.data() as DirectoryPage).revision;
             transaction.update(dir.ref, {revision: oldRevision + 1});
         }
-        const oldMetadata = (needUpdates[needUpdates.length - 1].data() as DirectoryPage).metadata;
-        transaction.update(lastRef, {
+        const oldMetadata = (directParent.data() as DirectoryPage).metadata;
+        transaction.update(directParent.ref, {
             metadata: Object.assign(oldMetadata, {
                 dirCount: oldMetadata.dirCount + 1,
+                timeUpdated: Timestamp.now()
+            })
+        });
+    });
+}
+
+export async function createNewFile(uid: string, collectionId: string, path: string) {
+    const parentPaths = normalizePath(path);
+    const invalidDirs = parentPaths.filter(name => !validNameRegex.test(name));
+    if (parentPaths.length === 0 || invalidDirs.length > 0) {
+        throw new Error('Invalid path: ' + path);
+    }
+
+    const fileName = parentPaths.pop()!;
+    const ancestors = await resolveDirectoryPathToRefs(uid, collectionId, parentPaths);
+
+    await runTransaction(firestore, async (transaction) => {
+        // read phase
+        const needUpdates = await Promise.all(ancestors.map(
+            docSnapshot => transaction.get(docSnapshot)
+        ));
+        const directParent = needUpdates[needUpdates.length - 1];
+        const parentID = (directParent.data() as DirectoryPage | FileEntry).id;
+
+        const newFileId = computeUniqueID(uid, parentID, fileName);
+        const newFileRef = await transaction.get(
+            doc(collection(firestore, 'filesystem'), newFileId)
+        );
+        if (newFileRef.exists()) {
+            throw new Error('Directory or file already exists ' + fileName);
+        }
+
+        // write phase
+        const fileSize = 0;
+        const newFileObject: FileEntry = {
+            id: newFileId,
+            parent: parentID,
+            owner: uid,
+            type: 'file',
+            name: fileName,
+            revision: 0,
+            hash: '', // Generate or define the hash for the file content
+            fileHandle: '',
+            metadata: {
+                contentType: '', // Define the content type of the file
+                size: fileSize, // Specify the size of the file
+                timeCreated: Timestamp.now(),
+                timeUpdated: Timestamp.now(),
+            },
+        };
+        transaction.set(newFileRef.ref, newFileObject);
+        for (const dir of needUpdates) {
+            const oldData = dir.data() as DirectoryPage;
+            transaction.update(dir.ref, {
+                    revision: oldData.revision + 1,
+                    metadata: Object.assign(oldData.metadata, {
+                        fileCount: oldData.metadata.fileCount + 1,
+                        size: oldData.metadata.size + fileSize,
+                    })
+                }
+            );
+        }
+        const oldMetadata = (directParent.data() as DirectoryPage).metadata;
+        transaction.update(directParent.ref, {
+            metadata: Object.assign(oldMetadata, {
+                fileCount: oldMetadata.fileCount + 1,
                 timeUpdated: Timestamp.now()
             })
         });
