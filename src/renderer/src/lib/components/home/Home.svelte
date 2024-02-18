@@ -8,23 +8,8 @@
     } from '$lib/services/file-service';
 
     async function test() {
-        // const result = await createNewCollection('New Collection');
-        // console.log(result);
-
-        const uid = 'P9raM7Cu88SWRSMMM39ztANMZEN2';
-        const colId = 'e4f8e0ea-bafc-4b83-8b89-4ba5fca7c6a6';
-
-        const cursor = await getCollectionCursor(uid, colId);
-        await cursor.push('test dir');
-
-        console.log(cursor.getCurrentPath());
-        const iter = await cursor.getDirectoryIterator();
-        console.log(iter.getCurrentPage());
-
-        await cursor.pop();
-        console.log(cursor.getCurrentPath());
-        const iter2 = await cursor.getDirectoryIterator();
-        console.log(iter2.getCurrentPage());
+        const result = await createNewCollection('New Collection');
+        console.log(result);
     }
 </script>
 

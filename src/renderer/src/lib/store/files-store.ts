@@ -8,16 +8,20 @@ interface DatasourceViewerState {
     isLoading: boolean;
 }
 
-interface FileViewerState {
+export interface FileViewerState {
     datasource: DataSource;
     path: string[];
     entries: DirectoryItem[];
     isLoading: boolean;
-    cursor: PathCursor;
+
+    cursor: PathCursor | null;
+    unsubscribe: () => void;
 }
 
 export const datasourceState = writable<DatasourceViewerState>({
     sources: [],
     isLoading: true
 });
+
+export const fileViewerState = writable<FileViewerState | null>(null);
 

@@ -21,6 +21,7 @@ import 'crypto';
 export type DataSource = DocumentsCollection;
 
 interface DocumentsCollection {
+    id: DataSourceId;
     type: 'document';
     owner: UserId;
     name: string;
@@ -103,6 +104,10 @@ class DirectoryPageIterator {
         return this.currentSnapshot.docs.map(
             doc => doc.data() as FileEntry | DirectoryPage
         );
+    }
+
+    getCurrentQuery() {
+        return this.currentSnapshot.query;
     }
 
     async nextPage() {
@@ -216,6 +221,7 @@ export async function createNewCollection(name: string) {
     }
     const rootPageId = computeUniqueID(uid, collectionId, '$root');
     const newCollection: DocumentsCollection = {
+        id: collectionId,
         name: name,
         owner: uid,
         root: rootPageId,

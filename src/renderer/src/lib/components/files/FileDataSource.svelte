@@ -3,6 +3,7 @@
     import type {ComponentType, SvelteComponent} from "svelte";
     import {WallpaperIcon} from "lucide-svelte";
     import {Button} from "$lib/components/ui/button";
+    import {loadNewDataSource} from "$lib/services/datasource-service";
 
     const IconMap: Record<DataSource['type'], ComponentType> = {
         'document': WallpaperIcon
@@ -10,8 +11,8 @@
 
     export let item: DataSource;
 
-    function handleSwitchingCollection() {
-
+    async function handleSwitchingCollection() {
+        await loadNewDataSource(item);
     }
 
 </script>
