@@ -1,7 +1,13 @@
 import {initializeApp} from "firebase/app";
-import {getAuth, signOut, GoogleAuthProvider, connectAuthEmulator, getIdToken} from "firebase/auth";
-import {getFirestore, connectFirestoreEmulator} from 'firebase/firestore';
-import {getStorage, connectStorageEmulator} from 'firebase/storage';
+import {
+    getAuth,
+    signOut,
+    GoogleAuthProvider,
+    connectAuthEmulator,
+    getIdToken,
+} from "firebase/auth";
+import {getFirestore, connectFirestoreEmulator} from "firebase/firestore";
+import {getStorage, connectStorageEmulator} from "firebase/storage";
 import {getFunctions, connectFunctionsEmulator} from "firebase/functions";
 
 const firebaseConfig = {
@@ -11,14 +17,14 @@ const firebaseConfig = {
     storageBucket: "speedy-atom-413006.appspot.com",
     messagingSenderId: "664044881400",
     appId: "1:664044881400:web:a03d66cc7af41f7f35020d",
-    measurementId: "G-F7ERQHTJLB"
+    measurementId: "G-F7ERQHTJLB",
 };
 
 export const firebaseApp = initializeApp(firebaseConfig);
 export const firebaseAuth = getAuth(firebaseApp);
-export const firestore = getFirestore();
-export const storage = getStorage();
-export const functions = getFunctions();
+export const firestore = getFirestore(firebaseApp);
+export const storage = getStorage(firebaseApp);
+export const functions = getFunctions(firebaseApp);
 
 export function logout() {
     return signOut(firebaseAuth);
@@ -33,7 +39,7 @@ export async function getAuthToken() {
 
 export const googleAuthProvider = new GoogleAuthProvider();
 
-// connectAuthEmulator(firebaseAuth, "http://127.0.0.1:9099");
-// connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
-// connectStorageEmulator(storage, "127.0.0.1", 9199);
-// connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+connectAuthEmulator(firebaseAuth, "http://127.0.0.1:9099");
+connectFirestoreEmulator(firestore, "127.0.0.1", 8080);
+connectStorageEmulator(storage, "127.0.0.1", 9199);
+connectFunctionsEmulator(functions, "127.0.0.1", 5001);

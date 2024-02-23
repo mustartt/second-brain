@@ -7,12 +7,9 @@
     import FilesSidebar from "$lib/components/files/FilesSidebar.svelte";
     import {
         ArrowDownUp,
-        ArrowDownWideNarrow, ArrowUpWideNarrow,
-        ChevronRightIcon,
-        FolderIcon,
-        FolderOpenIcon, FolderPlusIcon,
+        ArrowDownWideNarrow,
+        FolderPlusIcon,
         LayoutGrid,
-        LayoutGridIcon,
         ListTree, Loader2Icon, UploadIcon
     } from "lucide-svelte";
     import * as Tabs from "$lib/components/ui/tabs";
@@ -80,15 +77,15 @@
                 </div>
 
                 <div class="flex w-full h-full mt-2 rounded p-4 overflow-y-auto">
-                    <Tabs.Content value="grid" class="flex">
+                    <Tabs.Content value="grid" class="flex w-full">
                         {#if viewerState.isLoading}
-                            <div class="w-full mt-32 justify-center items-center">
+                            <div class="flex w-full justify-center -mt-16 items-center">
                                 <Loader2Icon class="w-5 h-5 animate-spin mr-2"/>
                                 <span class="text-muted-foreground">Loading Files...</span>
                             </div>
                         {:else}
                             <ContextMenu.Root>
-                                <ContextMenu.Trigger>
+                                <ContextMenu.Trigger class="mx-auto">
                                     {#if viewerState.entries.length === 0}
                                         <div class="flex w-full mt-32 justify-center items-center">
                                             <span class="text-muted-foreground">No Items</span>

@@ -15,6 +15,7 @@
         "checkJs": true,
         "noUnusedLocals": false,
         "noUnusedParameters": false,
+        "esModuleInterop": true,
         "lib": [
             "ESNext",
             "DOM",
