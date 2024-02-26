@@ -10,7 +10,7 @@
         ArrowDownWideNarrow,
         FolderPlusIcon,
         LayoutGrid,
-        ListTree, Loader2Icon, UploadIcon
+        ListTree, Loader2Icon, UploadIcon,
     } from "lucide-svelte";
     import * as Tabs from "$lib/components/ui/tabs";
     import * as Select from "$lib/components/ui/select";
@@ -85,16 +85,17 @@
                             </div>
                         {:else}
                             <ContextMenu.Root>
-                                <ContextMenu.Trigger class="mx-auto">
+                                <ContextMenu.Trigger class="w-full">
                                     {#if viewerState.entries.length === 0}
                                         <div class="flex w-full mt-32 justify-center items-center">
                                             <span class="text-muted-foreground">No Items</span>
                                         </div>
                                     {:else}
-                                        <div class="grid grid-cols-8 2xl:grid-cols-10 container gap-4">
+                                        <div
+                                            class="grid grid-cols-8 2xl:grid-cols-10 3xl:grid-cols-12 4xl:grid-cols-[repeat(14,minmax(0,1fr))] 5xl:grid-cols-[repeat(16,minmax(0,1fr))] 6xl:grid-cols-[repeat(18,minmax(0,1fr))] gap-4">
                                             {#each viewerState.entries as item}
                                                 {#if item.type === 'dir'}
-                                                    <FolderGridItem name={item.name}/>
+                                                    <FolderGridItem folder={item}/>
                                                 {:else}
                                                     <FileGridItem name={item.name}/>
                                                 {/if}

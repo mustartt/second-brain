@@ -32,7 +32,7 @@
             name: "Dir 1",
         });
         await createFolder({
-            parentId: "703fff5f-7093-499d-bfed-2cdaf078938f",
+            parentId: rootId,
             folderId: "e6ba72f9-686a-4af7-8984-6acd57fd7d44",
             name: "Dir 2",
         });

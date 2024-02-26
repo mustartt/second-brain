@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {ChevronRightIcon, FolderIcon, FolderOpenIcon} from 'lucide-svelte';
+    import {ChevronRightIcon, FolderIcon, FolderOpenIcon} from "lucide-svelte";
     import {popDirectoryOnToPath} from "$lib/services/file-viewer-service";
 
     export let path: string[];

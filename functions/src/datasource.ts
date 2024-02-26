@@ -51,7 +51,7 @@ export const createDataSource
             type: data.type,
         };
         const newRootPage: DirectoryEntry = {
-            id: data.id,
+            id: rootFolderID,
             type: "dir",
             name: "$root",
             owner: uid,

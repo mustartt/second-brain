@@ -1,30 +1,31 @@
 import {firebaseAuth} from "$lib/services/firebase-service";
 import {toast} from "svelte-sonner";
-import {datasourceState, type FileViewerState, fileViewerState} from "$lib/store/files-store";
+import {
+    datasourceState,
+    type FileViewerState,
+    fileViewerState,
+} from "$lib/store/files-store";
 import {
     type DataSource,
-    type DirectoryPage,
-    type FileEntry,
     getAllCollections,
-    getCollectionCursor
+    getCollectionCursor,
 } from "$lib/services/file-service";
 import {get} from "svelte/store";
-import {onSnapshot} from 'firebase/firestore';
 import {registerDirectoryChanges} from "$lib/services/file-viewer-service";
 
 export async function loadDataSources() {
     try {
         const uid = firebaseAuth.currentUser?.uid;
         if (!uid) {
-            console.error('Missing uid');
-            toast.error('Unexpected error when loading datasources');
+            console.error("Missing uid");
+            toast.error("Unexpected error when loading datasources");
             return;
         }
         datasourceState.update((value) => {
             value.isLoading = true;
             return value;
         });
-        const allCollections = await getAllCollections(uid);
+        const allCollections = await getAllCollections();
         datasourceState.update((value) => {
             value.isLoading = false;
             value.sources = allCollections;
@@ -32,7 +33,7 @@ export async function loadDataSources() {
         });
     } catch (err) {
         console.error(err);
-        toast.error('Unexpected error when loading data sources');
+        toast.error("Unexpected error when loading data sources");
     }
 }
 
@@ -53,7 +54,7 @@ export async function loadNewDataSource(source: DataSource) {
         oldState?.unsubscribe();
 
         // new viewer state
-        const cursor = await getCollectionCursor(source.owner, source.id);
+        const cursor = await getCollectionCursor(source);
         const iter = await cursor.getDirectoryIterator();
         const unsub = registerDirectoryChanges(iter.getCurrentQuery());
         const loadedViewState: FileViewerState = {
@@ -67,6 +68,6 @@ export async function loadNewDataSource(source: DataSource) {
         fileViewerState.set(loadedViewState);
     } catch (err) {
         console.error(err);
-        toast.error('Unexpected error when loading data source');
+        toast.error("Unexpected error when loading data source");
     }
 }

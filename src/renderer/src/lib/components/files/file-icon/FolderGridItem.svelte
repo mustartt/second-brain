@@ -1,19 +1,18 @@
 <script lang="ts">
-    import {fileViewerState} from "$lib/store/files-store";
-    import {get} from "svelte/store";
     import {pushDirectoryOnToPath} from "$lib/services/file-viewer-service";
+    import type {DirectoryEntry} from "$lib/services/file-service";
 
-    export let name: string = 'New Folder';
+    export let folder: DirectoryEntry;
 
     async function handleDoubleClick() {
-        await pushDirectoryOnToPath(name);
+        await pushDirectoryOnToPath(folder);
     }
 
 </script>
 
-<div on:dragenter={() => console.log('enter', name)}
-     on:dragleave={() => console.log('leave', name)}
-     on:drop={(event) => console.log('drop', name, event)}
+<div on:dragenter={() => console.log('enter', folder.id, folder.name)}
+     on:dragleave={() => console.log('leave', folder.id, folder.name)}
+     on:drop={(event) => console.log('drop', folder.id, folder.name, event)}
      on:dblclick={handleDoubleClick}
      role="cell"
      tabindex="0"
@@ -21,6 +20,6 @@
     <img src="src/assets/file-viewer/folder-12.png" alt="file icon"
          class="aspect-auto w-12">
     <span class="text-wrap max-w-24 overflow-x-hidden cursor-text text-ellipsis">
-        {name}
+        {folder.name}
     </span>
 </div>

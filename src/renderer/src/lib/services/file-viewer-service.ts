@@ -1,12 +1,12 @@
 import {get} from "svelte/store";
 import {type FileViewerState, fileViewerState} from "$lib/store/files-store";
-import {type DirectoryPage, type FileEntry} from "$lib/services/file-service";
+import {type DirectoryEntry, type FileEntry} from "$lib/services/file-service";
 import {onSnapshot, type Query} from "firebase/firestore";
 
 export function registerDirectoryChanges(query: Query) {
     return onSnapshot(query, snapshot => {
         const newEntries = snapshot.docs.map(doc =>
-            doc.data() as FileEntry | DirectoryPage);
+            doc.data() as FileEntry | DirectoryEntry);
         fileViewerState.update(value => {
             if (value) {
                 value.entries = newEntries;
@@ -16,7 +16,7 @@ export function registerDirectoryChanges(query: Query) {
     });
 }
 
-export async function pushDirectoryOnToPath(newDir: string) {
+export async function pushDirectoryOnToPath(folder: DirectoryEntry) {
     const oldState = get(fileViewerState)!;
 
     const newState: FileViewerState = {
@@ -24,7 +24,7 @@ export async function pushDirectoryOnToPath(newDir: string) {
         cursor: oldState.cursor,
         entries: [],
         isLoading: true,
-        path: [...oldState.path, newDir],
+        path: [...oldState.path, folder.name],
         unsubscribe: () => {
         },
     };
@@ -34,7 +34,7 @@ export async function pushDirectoryOnToPath(newDir: string) {
 
     // new viewer state
     const cursor = oldState.cursor!;
-    await cursor.push(newDir);
+    await cursor.push(folder.id);
 
     const iter = await cursor.getDirectoryIterator();
     const unsub = registerDirectoryChanges(iter.getCurrentQuery());
