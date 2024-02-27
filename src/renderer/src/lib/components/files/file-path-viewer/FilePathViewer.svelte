@@ -12,17 +12,17 @@
     }
 </script>
 
-<div class="flex items-center text-muted-foreground">
+<div class="flex items-center h-10 text-muted-foreground overflow-x-auto">
     {#each path as item, index}
         {#if index + 1 !== path.length}
-            <button class="flex items-center font-semibold hover:bg-muted py-1 px-2 rounded"
+            <button class="flex items-center font-semibold hover:bg-muted py-1 px-2 rounded text-nowrap"
                     on:click={async () => await gotoDirectory(index)}>
                 <FolderOpenIcon class="w-4 h-4 mr-2"/>
                 {item}
             </button>
             <ChevronRightIcon class="h-6 w-6 mt-0.5 mr-1"/>
         {:else }
-            <span class="flex items-center font-semibold text-foreground hover:bg-muted py-1 px-2 rounded">
+            <span class="flex items-center font-semibold text-foreground hover:bg-muted py-1 px-2 rounded text-nowrap">
                 <FolderIcon class="w-4 h-4 mr-2"/>
                 {item}
             </span>

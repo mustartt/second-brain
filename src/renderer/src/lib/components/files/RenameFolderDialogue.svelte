@@ -18,8 +18,6 @@
     async function renameHandler() {
         isLoading = true;
         const viewerState = get(fileViewerState);
-        console.log(viewerState);
-
         const folderId = viewerState?.cursor?.getCurrentPageDetails().id;
         if (!folderId) {
             toast.error("Unexpected error occurred when renaming folder");

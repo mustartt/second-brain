@@ -4,7 +4,7 @@ import {onSnapshot, type Query} from "firebase/firestore";
 import {httpsCallable} from "firebase/functions";
 import {functions} from "$lib/services/firebase-service";
 import type {
-    CreateFolderRequest,
+    CreateFolderRequest, DeleteFolderRequest,
     FileEntry,
     FolderId,
     FolderResponse, RenameFolderRequest,
@@ -13,16 +13,20 @@ import type {DirectoryEntry} from "$lib/services/types";
 import {v4 as uuidv4} from "uuid";
 
 export function registerDirectoryChanges(query: Query) {
-    return onSnapshot(query, snapshot => {
-        const newEntries = snapshot.docs.map(doc =>
-            doc.data() as FileEntry | DirectoryEntry);
-        fileViewerState.update(value => {
-            if (value) {
-                value.entries = newEntries;
-            }
-            return value;
+    console.count("listener:register");
+    return () => {
+        console.count("listener:unregister");
+        onSnapshot(query, snapshot => {
+            const newEntries = snapshot.docs.map(doc =>
+                doc.data() as FileEntry | DirectoryEntry);
+            fileViewerState.update(value => {
+                if (value) {
+                    value.entries = newEntries;
+                }
+                return value;
+            });
         });
-    });
+    };
 }
 
 export async function pushDirectoryOnToPath(folder: DirectoryEntry) {
@@ -109,6 +113,14 @@ export async function renameFolder(folderId: FolderId, newName: string) {
     const result = await func({
         folderId: folderId,
         newName,
+    });
+    return result.data;
+}
+
+export async function deleteFolder(folderId: FolderId) {
+    const func = httpsCallable<DeleteFolderRequest, FolderResponse>(functions, "deleteFolder");
+    const result = await func({
+        folderId: folderId,
     });
     return result.data;
 }

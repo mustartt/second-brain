@@ -15,8 +15,6 @@
     async function createFolderHandler() {
         isLoading = true;
         const viewerState = get(fileViewerState);
-        console.log(viewerState);
-
         const folderId = viewerState?.cursor?.getCurrentPageDetails().id;
         if (!folderId) {
             toast.error("Unexpected error occurred when creating new folder");

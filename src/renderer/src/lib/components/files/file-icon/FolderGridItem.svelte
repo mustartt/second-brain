@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {pushDirectoryOnToPath} from "$lib/services/file-viewer-service";
+    import {deleteFolder, pushDirectoryOnToPath} from "$lib/services/file-viewer-service";
     import * as ContextMenu from "$lib/components/ui/context-menu";
     import type {DirectoryEntry} from "$lib/services/types";
     import {FolderPenIcon, FolderTreeIcon, Trash2Icon} from "lucide-svelte";
@@ -11,6 +11,14 @@
 
     async function handleDoubleClick() {
         await pushDirectoryOnToPath(folder);
+    }
+
+    async function handleDelete() {
+        toast.promise(deleteFolder(folder.id), {
+            loading: "Deleting folder " + folder.name,
+            success: "Deleted folder " + folder.name,
+            error: "Failed to delete folder " + folder.name,
+        });
     }
 </script>
 
@@ -45,7 +53,7 @@
             <FolderTreeIcon class="w-4 h-4 mr-2 text-muted-foreground"/>
             Move
         </ContextMenu.Item>
-        <ContextMenu.Item on:click={() => toast.info('not yet implemented')}
+        <ContextMenu.Item on:click={handleDelete}
                           class="text-red-700">
             <Trash2Icon class="w-4 h-4 mr-2"/>
             Delete

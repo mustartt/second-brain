@@ -92,7 +92,6 @@ export class PathCursor {
     async getDirectoryIterator(pageSize: number = 25,
         orderKey: OrderByKey = "name",
         order: OrderByOrder = "asc") {
-        console.log("starting", this.currentPage.id);
         const startQuery = query(
             collection(firestore, "filesystem"),
             where("owner", "==", this.uid),
