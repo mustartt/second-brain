@@ -6,12 +6,12 @@ import {
     fileViewerState,
 } from "$lib/store/files-store";
 import {
-    type DataSource,
     getAllCollections,
     getCollectionCursor,
 } from "$lib/services/file-service";
 import {get} from "svelte/store";
 import {registerDirectoryChanges} from "$lib/services/file-viewer-service";
+import type {DataSource} from "$lib/services/types";
 
 export async function loadDataSources() {
     try {

@@ -1,9 +1,7 @@
 <script lang="ts">
     import {onDestroy, onMount} from "svelte";
-    import {getAllCollections} from "$lib/services/file-service";
-    import {firebaseAuth} from "$lib/services/firebase-service";
     import {toast} from "svelte-sonner";
-    import {datasourceState, type FileViewerState, fileViewerState} from "$lib/store/files-store";
+    import {type FileViewerState, fileViewerState} from "$lib/store/files-store";
     import FilesSidebar from "$lib/components/files/FilesSidebar.svelte";
     import {
         ArrowDownUp,
@@ -15,13 +13,16 @@
     import * as Tabs from "$lib/components/ui/tabs";
     import * as Select from "$lib/components/ui/select";
     import * as ContextMenu from "$lib/components/ui/context-menu";
+
     import FolderGridItem from "$lib/components/files/file-icon/FolderGridItem.svelte";
     import {Separator} from "$lib/components/ui/separator";
-    import {Button} from "$lib/components/ui/button";
+    import {Button, buttonVariants} from "$lib/components/ui/button";
     import {loadDataSources} from "$lib/services/datasource-service";
     import FilePathViewer from "$lib/components/files/file-path-viewer/FilePathViewer.svelte";
     import FileGridItem from "$lib/components/files/file-icon/FileGridItem.svelte";
+    import CreateFolderDialogue from "$lib/components/files/CreateFolderDialogue.svelte";
 
+    let createFolderDialogueOpen = false;
 
     let viewerState: FileViewerState | null;
     const unsub = fileViewerState.subscribe(value => {
@@ -32,7 +33,11 @@
         await loadDataSources();
     });
 
-    onDestroy(unsub);
+    onDestroy(() => {
+        viewerState?.unsubscribe();
+        unsub();
+    });
+
 </script>
 
 <Tabs.Root value="grid" class="flex flex-col py-2 px-4 h-screen">
@@ -76,6 +81,8 @@
                     </div>
                 </div>
 
+                <CreateFolderDialogue bind:open={createFolderDialogueOpen}/>
+
                 <div class="flex w-full h-full mt-2 rounded p-4 overflow-y-auto">
                     <Tabs.Content value="grid" class="flex w-full">
                         {#if viewerState.isLoading}
@@ -84,37 +91,24 @@
                                 <span class="text-muted-foreground">Loading Files...</span>
                             </div>
                         {:else}
-                            <ContextMenu.Root>
-                                <ContextMenu.Trigger class="w-full">
-                                    {#if viewerState.entries.length === 0}
-                                        <div class="flex w-full mt-32 justify-center items-center">
-                                            <span class="text-muted-foreground">No Items</span>
-                                        </div>
-                                    {:else}
-                                        <div
-                                            class="grid grid-cols-8 2xl:grid-cols-10 3xl:grid-cols-12 4xl:grid-cols-[repeat(14,minmax(0,1fr))] 5xl:grid-cols-[repeat(16,minmax(0,1fr))] 6xl:grid-cols-[repeat(18,minmax(0,1fr))] gap-4">
-                                            {#each viewerState.entries as item}
-                                                {#if item.type === 'dir'}
-                                                    <FolderGridItem folder={item}/>
-                                                {:else}
-                                                    <FileGridItem name={item.name}/>
-                                                {/if}
-                                            {/each}
-                                        </div>
-                                    {/if}
-                                    <ContextMenu.Content class="w-52">
-                                        <ContextMenu.Item on:click={() => toast.info('not implemented')}>
-                                            <FolderPlusIcon class="w-5 h-5 text-muted-foreground mr-2"/>
-                                            New Folder
-                                        </ContextMenu.Item>
-                                        <ContextMenu.Separator/>
-                                        <ContextMenu.Item on:click={() => toast.info('not implemented')}>
-                                            <UploadIcon class="w-5 h-5 text-muted-foreground mr-2"/>
-                                            Upload File
-                                        </ContextMenu.Item>
-                                    </ContextMenu.Content>
-                                </ContextMenu.Trigger>
-                            </ContextMenu.Root>
+                            <div class="w-full">
+                                {#if viewerState.entries.length === 0}
+                                    <div class="flex w-full mt-32 justify-center items-center">
+                                        <span class="text-muted-foreground">No Items</span>
+                                    </div>
+                                {:else}
+                                    <div
+                                        class="grid grid-cols-8 2xl:grid-cols-10 3xl:grid-cols-12 4xl:grid-cols-[repeat(14,minmax(0,1fr))] 5xl:grid-cols-[repeat(16,minmax(0,1fr))] 6xl:grid-cols-[repeat(18,minmax(0,1fr))] gap-4">
+                                        {#each viewerState.entries as item}
+                                            {#if item.type === 'dir'}
+                                                <FolderGridItem folder={item}/>
+                                            {:else}
+                                                <FileGridItem name={item.name}/>
+                                            {/if}
+                                        {/each}
+                                    </div>
+                                {/if}
+                            </div>
                         {/if}
                     </Tabs.Content>
                 </div>

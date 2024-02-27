@@ -16,7 +16,6 @@ import {
     Transaction,
     FieldValue,
     BulkWriter,
-    BulkWriterOptions,
 } from "firebase-admin/firestore";
 
 function getFirestoreFSPath(id: string) {

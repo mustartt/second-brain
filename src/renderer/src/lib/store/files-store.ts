@@ -1,7 +1,8 @@
-import {type DataSource, type DirectoryPage, type FileEntry, PathCursor} from "$lib/services/file-service";
+import {PathCursor} from "$lib/services/file-service";
+import type {DataSource, DirectoryEntry, FileEntry} from "$lib/services/types";
 import {writable} from "svelte/store";
 
-type DirectoryItem = DirectoryPage | FileEntry;
+type DirectoryItem = DirectoryEntry | FileEntry;
 
 interface DatasourceViewerState {
     sources: DataSource[];
@@ -20,7 +21,7 @@ export interface FileViewerState {
 
 export const datasourceState = writable<DatasourceViewerState>({
     sources: [],
-    isLoading: true
+    isLoading: true,
 });
 
 export const fileViewerState = writable<FileViewerState | null>(null);

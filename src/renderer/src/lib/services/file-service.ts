@@ -12,71 +12,7 @@ import {
     startAfter,
 } from "firebase/firestore";
 import {firebaseAuth, firestore} from "./firebase-service";
-
-export type DataSourceId = string;
-export type UserId = string;
-export type FolderId = string;
-export type FileId = string;
-
-interface DocumentsDataSource {
-    id: DataSourceId;
-    type: "document";
-    owner: UserId;
-    name: string;
-
-    root: FolderId; // references the root page of the fs
-}
-
-export type DataSource = DocumentsDataSource;
-
-// Primary Key: UUIDv4
-export interface DirectoryEntry {
-    id: FolderId;
-    parent: FolderId;
-    owner: UserId;
-
-    type: "dir";
-    name: string;       // max 256 char
-    revision: number;   // monotonic revision id
-
-    metadata: {
-        fileCount: number;
-        dirCount: number;
-        size: number;   // size of all children
-        timeCreated: Timestamp;
-        timeUpdated: Timestamp;
-    };
-}
-
-export type FileStatus =
-    "created"
-    | "added"
-    | "queued"
-    | "processing"
-    | "processed"
-    | "error";
-
-// Primary Key: UUIDv4
-export interface FileEntry {
-    id: FileId;
-    parent: FolderId;
-    owner: UserId;
-
-    type: "file";
-    name: string;       // max 256 char
-    revision: number;   // monotonic revision id
-
-    hash: string;       // sha256 digest of file blob
-    fileHandle: string; // actual file handle to the file service
-    status: FileStatus;
-
-    metadata: {
-        contentType: string;
-        size: number;
-        timeCreated: Timestamp;
-        timeUpdated: Timestamp;
-    };
-}
+import type {DataSource, DirectoryEntry, FileEntry, FolderId} from "./types";
 
 type OrderByKey =
     "name"
@@ -139,7 +75,7 @@ export class PathCursor {
 
     private currentPage: DirectoryEntry;
 
-    constructor(col: DataSource, page: DirectoryEntry, path: string) {
+    constructor(col: DataSource, page: DirectoryEntry) {
         this.currentCollection = col;
         this.currentPage = page;
         this.uid = col.owner;
@@ -213,6 +149,5 @@ export async function getCollectionCursor(dataSource: DataSource) {
         throw new Error("Collection or root page does not exists");
     }
     const pageData = pageResult.data() as DirectoryEntry;
-    console.log(pageData);
-    return new PathCursor(dataSource, pageData, "/");
+    return new PathCursor(dataSource, pageData);
 }

@@ -1,7 +1,16 @@
 import {get} from "svelte/store";
 import {type FileViewerState, fileViewerState} from "$lib/store/files-store";
-import {type DirectoryEntry, type FileEntry} from "$lib/services/file-service";
 import {onSnapshot, type Query} from "firebase/firestore";
+import {httpsCallable} from "firebase/functions";
+import {functions} from "$lib/services/firebase-service";
+import type {
+    CreateFolderRequest,
+    FileEntry,
+    FolderId,
+    FolderResponse, RenameFolderRequest,
+} from "./types";
+import type {DirectoryEntry} from "$lib/services/types";
+import {v4 as uuidv4} from "uuid";
 
 export function registerDirectoryChanges(query: Query) {
     return onSnapshot(query, snapshot => {
@@ -82,4 +91,24 @@ export async function popDirectoryOnToPath(count: number) {
         unsubscribe: unsub,
     };
     fileViewerState.set(loadedViewState);
+}
+
+export async function createFolder(parentFolderId: FolderId, name: string) {
+    const func = httpsCallable<CreateFolderRequest, FolderResponse>(functions, "createFolder");
+    const folderId = uuidv4();
+    const result = await func({
+        folderId: folderId,
+        parentId: parentFolderId,
+        name: name,
+    });
+    return result.data;
+}
+
+export async function renameFolder(folderId: FolderId, newName: string) {
+    const func = httpsCallable<RenameFolderRequest, FolderResponse>(functions, "renameFolder");
+    const result = await func({
+        folderId: folderId,
+        newName,
+    });
+    return result.data;
 }
