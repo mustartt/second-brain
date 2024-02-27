@@ -23,8 +23,10 @@
     import FileGridItem from "$lib/components/files/file-icon/FileGridItem.svelte";
     import CreateFolderDialogue from "$lib/components/files/CreateFolderDialogue.svelte";
     import {cn} from "$lib/utils";
+    import FileUploadDialogue from "$lib/components/files/FileUploadDialogue.svelte";
 
     let createFolderDialogueOpen = false;
+    let fileUploadDialogueOpen = false;
 
     let viewerState: FileViewerState | null;
     const unsub = fileViewerState.subscribe(value => {
@@ -41,6 +43,8 @@
     });
 
 </script>
+
+<FileUploadDialogue open={fileUploadDialogueOpen} on:upload={(files) => console.log(files)}/>
 
 <Tabs.Root value="grid" class="flex flex-row py-2 px-4 h-screen overflow-x-hidden">
     <div class="flex flex-col space-y-2">
