@@ -137,7 +137,7 @@
                                         {#if item.type === 'dir'}
                                             <FolderGridItem folder={item}/>
                                         {:else}
-                                            <FileGridItem name={item.name}/>
+                                            <FileGridItem file={item}/>
                                         {/if}
                                     {/each}
                                 </div>

@@ -26,7 +26,6 @@
         "axios": "^1.6.7",
         "bits-ui": "^0.16.0",
         "clsx": "^2.1.0",
-        "common": "file:functions/common",
         "dompurify": "^3.0.8",
         "express": "^4.18.2",
         "firebase": "^10.7.2",
