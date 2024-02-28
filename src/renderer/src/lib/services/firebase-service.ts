@@ -24,6 +24,8 @@ export const firebaseApp = initializeApp(firebaseConfig);
 export const firebaseAuth = getAuth(firebaseApp);
 export const firestore = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
+export const storageUpload = getStorage(firebaseApp, "gs://speedy-atom-413006-upload");
+
 export const functions = getFunctions(firebaseApp);
 
 export function logout() {
@@ -42,4 +44,5 @@ export const googleAuthProvider = new GoogleAuthProvider();
 connectAuthEmulator(firebaseAuth, "http://127.0.0.1:9099");
 connectFirestoreEmulator(firestore, "127.0.0.1", 8080);
 connectStorageEmulator(storage, "127.0.0.1", 9199);
+connectStorageEmulator(storageUpload, "127.0.0.1", 9199);
 connectFunctionsEmulator(functions, "127.0.0.1", 5001);

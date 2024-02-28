@@ -1,6 +1,7 @@
 import {HttpsError, onCall} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import {firestore} from "firebase-admin";
 import {Timestamp} from "firebase-admin/firestore";
 
@@ -10,26 +11,11 @@ import {
     DataSource,
     DataSourceResponse, DeleteDataSourceRequest, DeleteDataSourceRequestSchema,
     DirectoryEntry, RenameDataSourceRequest, RenameDataSourceRequestSchema,
-} from "common";
+} from "./common";
 import {v4 as uuidv4} from "uuid";
 
-export const createDataSource
-    = onCall<CreateDataSourceRequest>(async (request): Promise<DataSourceResponse> => {
-    let data: CreateDataSourceRequest;
-    try {
-        data = CreateDataSourceRequestSchema.parse(request.data);
-    } catch (err) {
-        logger.warn("invalid-argument:", `${err}`);
-        throw new HttpsError("invalid-argument", `${err}`);
-    }
-    const uid = request.auth?.uid;
-    if (!uid) {
-        logger.warn("unauthenticated:", data.id, "missing authentication");
-        throw new HttpsError("unauthenticated", "missing authentication");
-    }
-
+export async function createNewDataSource(data: CreateDataSourceRequest, uid: string) {
     const firestore = admin.firestore();
-
     return await firestore.runTransaction(async (txn: firestore.Transaction) => {
         const docRef = firestore.doc(`datasource/${data.id}`);
         const doc = await txn.get(docRef);
@@ -70,6 +56,35 @@ export const createDataSource
 
         return newDataSource;
     });
+}
+
+export const createDefaultDataSourceForNewUsers = functions.auth.user().onCreate(
+    async (user, context) => {
+        const newId = uuidv4();
+        await createNewDataSource({
+            name: "Default",
+            type: "document",
+            id: newId,
+        }, user.uid);
+        logger.info("Created default datasource for user", user.uid, "source id", newId);
+    });
+
+export const createDataSource
+    = onCall<CreateDataSourceRequest>(async (request): Promise<DataSourceResponse> => {
+    let data: CreateDataSourceRequest;
+    try {
+        data = CreateDataSourceRequestSchema.parse(request.data);
+    } catch (err) {
+        logger.warn("invalid-argument:", `${err}`);
+        throw new HttpsError("invalid-argument", `${err}`);
+    }
+    const uid = request.auth?.uid;
+    if (!uid) {
+        logger.warn("unauthenticated:", data.id, "missing authentication");
+        throw new HttpsError("unauthenticated", "missing authentication");
+    }
+
+    return await createNewDataSource(data, uid);
 });
 
 export const renameDataSource

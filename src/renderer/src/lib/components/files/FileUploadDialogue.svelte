@@ -1,19 +1,17 @@
-<script lang="ts">
+<script context="module" lang="ts">
+    export type UploadEvent = { files: FileList };
+</script>
 
+<script lang="ts">
     import {createEventDispatcher} from "svelte";
     import type {ChangeEventHandler} from "svelte/elements";
 
     const dispatch = createEventDispatcher();
 
-    export let open: boolean;
-
     let el: HTMLInputElement;
 
-    $: {
-        if (el && open) {
-            el.click();
-        }
-        open = false;
+    export function open() {
+        el.click();
     }
 
     const handleFileChange: ChangeEventHandler<HTMLInputElement> = (event) => {

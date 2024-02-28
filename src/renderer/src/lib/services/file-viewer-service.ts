@@ -13,20 +13,16 @@ import type {DirectoryEntry} from "$lib/services/types";
 import {v4 as uuidv4} from "uuid";
 
 export function registerDirectoryChanges(query: Query) {
-    console.count("listener:register");
-    return () => {
-        console.count("listener:unregister");
-        onSnapshot(query, snapshot => {
-            const newEntries = snapshot.docs.map(doc =>
-                doc.data() as FileEntry | DirectoryEntry);
-            fileViewerState.update(value => {
-                if (value) {
-                    value.entries = newEntries;
-                }
-                return value;
-            });
+    return onSnapshot(query, snapshot => {
+        const newEntries = snapshot.docs.map(doc =>
+            doc.data() as FileEntry | DirectoryEntry);
+        fileViewerState.update(value => {
+            if (value) {
+                value.entries = newEntries;
+            }
+            return value;
         });
-    };
+    });
 }
 
 export async function pushDirectoryOnToPath(folder: DirectoryEntry) {

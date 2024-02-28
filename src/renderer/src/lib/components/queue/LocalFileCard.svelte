@@ -1,12 +1,12 @@
 <script lang="ts">
-    import FileDrop from '$lib/components/queue/FileDrop.svelte';
-    import * as Card from '$lib/components/ui/card';
+    import FileDrop from "$lib/components/queue/FileDrop.svelte";
+    import * as Card from "$lib/components/ui/card";
 
     import {createFileUpload} from "$lib/services/upload-service";
 
-    async function handler(files: File[]) {
+    function handler(files: File[]) {
         for (const file of files) {
-            createFileUpload(file);
+            createFileUpload(file, undefined, undefined);
         }
     }
 </script>

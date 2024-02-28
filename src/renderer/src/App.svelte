@@ -1,14 +1,14 @@
 <script lang="ts">
-    import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
-    import ChatPage from '$lib/components/chat/ChatPage.svelte';
-    import {Toaster} from '$lib/components/ui/sonner';
+    import Sidebar from "$lib/components/sidebar/Sidebar.svelte";
+    import ChatPage from "$lib/components/chat/ChatPage.svelte";
+    import {Toaster} from "$lib/components/ui/sonner";
     import {appState, authState, type Layout, layoutState} from "$lib/store/appstore";
     import {type ComponentType, onDestroy, onMount} from "svelte";
     import QueuePage from "$lib/components/queue/QueuePage.svelte";
     import FrontPage from "$lib/components/front-page/FrontPage.svelte";
     import {Loader2Icon} from "lucide-svelte";
     import {firebaseAuth} from "$lib/services/firebase-service";
-    import {onAuthStateChanged} from 'firebase/auth';
+    import {onAuthStateChanged} from "firebase/auth";
     import {toast} from "svelte-sonner";
     import Home from "$lib/components/home/Home.svelte";
     import FilesPage from "$lib/components/files/FilesPage.svelte";
@@ -19,12 +19,12 @@
     let displayLogoutTimeoutID: any;
 
     const layoutMap: Record<Layout, ComponentType | null> = {
-        'home': Home,
-        'answer': null,
-        'chat': ChatPage,
-        'files': FilesPage,
-        'queue': QueuePage,
-        'settings': null,
+        "home": Home,
+        "answer": null,
+        "chat": ChatPage,
+        "files": FilesPage,
+        "queue": QueuePage,
+        "settings": null,
     };
 
     const unsubLayout = layoutState.subscribe(value => {
@@ -38,32 +38,32 @@
 
     onMount(() => {
         setTimeout(() => {
-            const warning = document.getElementsByClassName('firebase-emulator-warning');
+            const warning = document.getElementsByClassName("firebase-emulator-warning");
             for (const element of warning) {
-                (element as HTMLElement).style.display = 'none';
-                toast.info('Disabled firebase emulator warnings');
+                (element as HTMLElement).style.display = "none";
+                toast.info("Disabled firebase emulator warnings");
             }
         }, 3000);
 
         setTimeout(() => {
             onAuthStateChanged(firebaseAuth, user => {
-                console.log('auth:changed', user);
+                console.log("auth:changed", user);
                 if (user) {
-                    const name = user.displayName || 'Guest User';
-                    const defaultProfile = new URL('https://ui-avatars.com/api');
-                    defaultProfile.searchParams.append('name', name);
-                    defaultProfile.searchParams.append('background', 'random');
+                    const name = user.displayName || "Guest User";
+                    const defaultProfile = new URL("https://ui-avatars.com/api");
+                    defaultProfile.searchParams.append("name", name);
+                    defaultProfile.searchParams.append("background", "random");
                     appState.updateUser({
                         name: name,
                         picture: user.photoURL || defaultProfile.toString(),
                         userID: user.uid,
-                        email: user.email || user.uid
+                        email: user.email || user.uid,
                     });
                 } else {
                     if (hasAuth) {
                         displayLogoutTimeoutID = setTimeout(() => {
                             clearTimeout(displayLogoutTimeoutID);
-                            toast.info('You are now signed out!');
+                            toast.info("You are now signed out!");
                         }, 500);
                         appState.updateUser(null);
                     }
@@ -92,7 +92,7 @@
             <div class="flex-none">
                 <Sidebar/>
             </div>
-            <div class="flex-auto border-l-[1px] border-l-accent">
+            <div class="flex-auto flex border-l-[1px] border-l-accent">
                 {#if layoutMap[activeTab] }
                     <svelte:component this={layoutMap[activeTab]}/>
                 {/if}

@@ -7,7 +7,7 @@ import {
     FolderId, MoveFolderRequest, MoveFolderRequestSchema,
     RenameFolderRequest,
     RenameFolderRequestSchema,
-} from "common";
+} from "./common";
 import * as logger from "firebase-functions/logger";
 import {HttpsError} from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
@@ -18,11 +18,11 @@ import {
     BulkWriter,
 } from "firebase-admin/firestore";
 
-function getFirestoreFSPath(id: string) {
+export function getFirestoreFSPath(id: string) {
     return `filesystem/${id}`;
 }
 
-function logAndThrow(code: FunctionsErrorCode, ...args: any[]) {
+export function logAndThrow(code: FunctionsErrorCode, ...args: any[]) {
     const argsAsString = args.join(" ");
     logger.warn(code + ":", argsAsString);
     throw new HttpsError("internal", argsAsString);
@@ -30,7 +30,7 @@ function logAndThrow(code: FunctionsErrorCode, ...args: any[]) {
 
 const MAX_TRAVERSAL_DEPTH = 64;
 
-async function getAndLockAllParentNodeRef(txn: Transaction, id: string) {
+export async function getAndLockAllParentNodeRef(txn: Transaction, id: string) {
     const firestore = admin.firestore();
 
     let visited: admin.firestore.DocumentReference[] = [];

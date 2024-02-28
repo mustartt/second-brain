@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {onDestroy, onMount} from "svelte";
+    import {type ComponentType, onDestroy, onMount, SvelteComponent} from "svelte";
     import {toast} from "svelte-sonner";
     import {type FileViewerState, fileViewerState} from "$lib/store/files-store";
     import FilesSidebar from "$lib/components/files/FilesSidebar.svelte";
@@ -23,10 +23,11 @@
     import FileGridItem from "$lib/components/files/file-icon/FileGridItem.svelte";
     import CreateFolderDialogue from "$lib/components/files/CreateFolderDialogue.svelte";
     import {cn} from "$lib/utils";
-    import FileUploadDialogue from "$lib/components/files/FileUploadDialogue.svelte";
+    import FileUploadDialogue, {type UploadEvent} from "$lib/components/files/FileUploadDialogue.svelte";
+    import {createFileUpload} from "$lib/services/upload-service";
 
     let createFolderDialogueOpen = false;
-    let fileUploadDialogueOpen = false;
+    let fileUploadDialogueEl: SvelteComponent;
 
     let viewerState: FileViewerState | null;
     const unsub = fileViewerState.subscribe(value => {
@@ -42,11 +43,19 @@
         unsub();
     });
 
+    function handleFileUploads(event: CustomEvent<UploadEvent>) {
+        const files = event.detail.files;
+        for (const file of files) {
+            const folderId = viewerState?.cursor?.getCurrentPageDetails().id;
+            createFileUpload(file, folderId, 0);
+        }
+    }
+
 </script>
 
-<FileUploadDialogue open={fileUploadDialogueOpen} on:upload={(files) => console.log(files)}/>
+<FileUploadDialogue bind:this={fileUploadDialogueEl} on:upload={handleFileUploads}/>
 
-<Tabs.Root value="grid" class="flex flex-row py-2 px-4 h-screen overflow-x-hidden">
+<Tabs.Root value="grid" class="flex flex-row w-full py-2 px-4 h-screen overflow-x-hidden">
     <div class="flex flex-col space-y-2">
         <h1 class="font-bold text-3xl tracking-tight">Your Files</h1>
         <FilesSidebar/>
@@ -67,9 +76,9 @@
                                     <FolderPlusIcon class="w-5 h-5 mr-2"/>
                                     New Folder
                                 </DropdownMenu.Item>
-                                <DropdownMenu.Item on:click={() => toast.info('not yet implemented')}>
+                                <DropdownMenu.Item on:click={() => fileUploadDialogueEl.open()}>
                                     <FilePlusIcon class="w-5 h-5 mr-2"/>
-                                    Upload File
+                                    Upload Files
                                 </DropdownMenu.Item>
                             </DropdownMenu.Group>
                         </DropdownMenu.Content>

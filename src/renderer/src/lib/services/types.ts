@@ -30,7 +30,6 @@ export interface DirectoryEntry {
 
 export type FileStatus =
     "created"
-    | "added"
     | "queued"
     | "processing"
     | "processed"
